@@ -1,0 +1,4 @@
+post_install() {
+  echo "Please note that DLL rebasing is not implemented yet"
+  echo "If you run programs that utilizes UNIX fork(), it might sometimes fail"
+}
