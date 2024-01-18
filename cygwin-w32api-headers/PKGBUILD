@@ -1,0 +1,36 @@
+pkgname=cygwin-w32api-headers
+pkgver=11.0.1
+pkgrel=1
+pkgdesc="Windows header files for the Cygwin cross toolchain"
+arch=('any')
+url="http://mingw-w64.sourceforge.net"
+license=('custom')
+groups=('cygwin-toolchain')
+options=('!strip' '!libtool' '!emptydirs')
+source=("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v${pkgver}.tar.bz2")
+sha256sums=('3f66bce069ee8bed7439a1a13da7cb91a5e67ea6170f21317ac7f5794625ee10')
+
+_targets="x86_64-pc-cygwin"
+
+build() {
+  for _target in ${_targets}; do
+    echo "Configuring ${_target} headers"
+    mkdir -p "$srcdir"/headers-${_target} && cd "$srcdir"/headers-${_target}
+    "$srcdir"/mingw-w64-v${pkgver}/mingw-w64-headers/configure \
+        --prefix=/usr/${_target} --host=${_target} \
+        --enable-sdk=all --enable-w32api
+  done
+}
+
+package() {
+  for _target in ${_targets}; do
+    echo "Installing ${_target} headers"
+    cd "$srcdir"/headers-${_target}
+    make DESTDIR="$pkgdir" install
+  done
+
+  echo "Installing MinGW-w64 licenses"
+  install -Dm644 "$srcdir"/mingw-w64-v${pkgver}/COPYING "$pkgdir"/usr/share/licenses/${pkgname}/COPYING
+  install -Dm644 "$srcdir"/mingw-w64-v${pkgver}/DISCLAIMER "$pkgdir"/usr/share/licenses/${pkgname}/DISCLAIMER
+  install -Dm644 "$srcdir"/mingw-w64-v${pkgver}/DISCLAIMER.PD "$pkgdir"/usr/share/licenses/${pkgname}/DISCLAIMER.PD
+}
