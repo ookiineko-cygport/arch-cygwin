@@ -1,0 +1,19 @@
+---  origsrc/binutils-2.41/config.rpath
++++  src/binutils-2.41/config.rpath
+@@ -438,7 +438,14 @@
+   bsdi4*)
+     ;;
+   cygwin* | mingw* | pw32*)
+-    shrext=.dll
++    case "$TOOLCHAIN_TARGET" in
++      i686-w64-mingw32 | x86_64-w64-mingw32)
++	shrext=.dll.a
++	;;
++      *)
++	shrext=.dll
++	;;
++    esac
+     ;;
+   darwin* | rhapsody*)
+     shrext=.dylib
+

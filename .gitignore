@@ -1,0 +1,7 @@
+# makepkg
+/*/src/
+/*/pkg/
+
+# source tarballs
+/**/*.tar
+/**/*.tar.*[zZ]*

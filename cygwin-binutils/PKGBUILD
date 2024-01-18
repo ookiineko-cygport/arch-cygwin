@@ -1,0 +1,49 @@
+pkgname=cygwin-binutils
+pkgver=2.41
+pkgrel=1
+pkgdesc="Cross binutils for the Cygwin cross-compiler"
+arch=('x86_64')
+url="http://www.gnu.org/software/binutils"
+license=('GPL')
+groups=('cygwin-toolchain')
+depends=('zlib')
+options=('!libtool' '!emptydirs')
+source=("https://ftp.gnu.org/gnu/binutils/binutils-${pkgver}.tar.gz"
+        cygwin-config-rpath.patch)
+sha512sums=('4c6d90deba4514b06cf2558e3bd695ec80844daee8666b5398a8b6c51f49b4287a7791d0524d9a97be2040e0a0f80c7edb071afd295ef8aa181aa61da6cd595e'
+            'd3459d1390f3d0691fbb27da0aa37e43ef664e39e8fbfcee23aab84ad1a3016a5ad90e2f98d1901a3384604e309bdb787cadcdd6f935563075b5a7c6e39f74a5')
+
+_targets="x86_64-pc-cygwin"
+
+prepare() {
+  cd "$srcdir"/binutils-${pkgver}
+  #do not install libiberty
+  sed -i 's/install_to_$(INSTALL_DEST) //' libiberty/Makefile.in
+
+  patch -Np2 -i ../cygwin-config-rpath.patch
+}
+
+build() {
+  for _target in $_targets; do
+    echo "Building ${_target} cross binutils"
+    mkdir -p "$srcdir"/binutils-${_target} && cd "$srcdir"/binutils-${_target}
+    "$srcdir"/binutils-${pkgver}/configure --prefix=/usr \
+        --target=${_target} \
+        --infodir=/usr/share/info/${_target} \
+        --enable-lto --enable-plugins \
+        --enable-deterministic-archives \
+        --disable-multilib --disable-nls \
+        --disable-werror
+     make -O
+  done
+}
+
+package() {
+  for _target in ${_targets}; do
+    echo "Installing ${_target} cross binutils"
+    cd "$srcdir"/binutils-${_target}
+    make DESTDIR="$pkgdir" install
+
+    rm "$pkgdir"/usr/lib/bfd-plugins/libdep.so
+  done
+}
