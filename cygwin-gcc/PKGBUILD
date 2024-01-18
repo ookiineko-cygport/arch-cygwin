@@ -1,0 +1,97 @@
+pkgname=cygwin-gcc
+pkgver=11.4.0
+pkgrel=1
+pkgdesc="Cross GCC for the Cygwin cross-compiler"
+arch=('x86_64')
+url="https://gcc.gnu.org"
+license=('GPL' 'LGPL' 'FDL' 'custom')
+groups=('cygwin-toolchain')
+depends=('zlib' 'libisl' 'libmpc'
+         'cygwin' 'cygwin-binutils'
+         'cygwin-w32api-runtime' 'cygwin-w32api-headers')
+options=('!strip' 'staticlibs' '!emptydirs' '!buildflags')
+source=("https://ftp.gnu.org/gnu/gcc/gcc-${pkgver}/gcc-${pkgver}.tar.xz"
+        cygwin-sysv-abi.patch
+        cygwin-driver.patch
+        cygwin-dllimport.patch
+        cygwin-skip-pr25993-test.patch
+        cygwin-__cxa-atexit.patch
+        cygwin-libgomp-soname.patch
+        cygwin-libstdcxx-config.patch
+        cygwin-newlib-ftm.patch)
+sha256sums=('3f2db222b007e8a4a23cd5ba56726ef08e8b1f1eb2055ee72c1402cea73a8dd9'
+            'bc788aa466a83184d285cc2f6c1ffc40c6ed416dd08c6999015262a53f1ab1b5'
+            'b1674c929fdb5edc03c32175efcc2bcd6c30368a53bcb50a2188cacf2b53fe9d'
+            'c5676fd62d5f7f69be26062b95d42ef47f28151af83b83efa3998ecd8e939e19'
+            '03ecf29419119286ebcef35864f9bd26d3bf3eaa355945856953204ed727e173'
+            '4bb1afde0efc679271ef058c7a123a713cd2a6933a6877845859bee72a16e98a'
+            'd873b5f370a039f2e737e8a9f44414c267697cc6371e1ae3e4eed0c15c09e6ee'
+            '22d297befb94df80b46262084341961d54bcfcaf83bba4af24380cfbf93a8ff9'
+            '2658eb376f7829179963978b69a048ed105a41508adc55d0fc0d607c14181926')
+
+_targets="x86_64-pc-cygwin"
+
+prepare() {
+  ln -sf gcc-${pkgver/+/-} gcc
+  cd gcc
+  # remove files created by patch
+  rm -f libgomp/config/cygwin/plugin-suffix.h
+
+  patch -p1 -i ../cygwin-sysv-abi.patch
+  patch -p1 -i ../cygwin-driver.patch
+  patch -p1 -i ../cygwin-dllimport.patch
+  patch -p1 -i ../cygwin-skip-pr25993-test.patch
+  patch -p1 -i ../cygwin-__cxa-atexit.patch
+  patch -p1 -i ../cygwin-libgomp-soname.patch
+  patch -p1 -i ../cygwin-libstdcxx-config.patch
+  patch -p1 -i ../cygwin-newlib-ftm.patch
+
+  # mmapio.c:69:14: error: implicit declaration of function ‘getpagesize’
+  sed -i 's|\-Werror||g' libbacktrace/configure
+}
+
+build() {
+  # MingW64 header clash
+  export CPPFLAGS+=" -DWIN32_LEAN_AND_MEAN"
+
+  for _target in ${_targets}; do
+    echo "Building ${_target} cross gcc"
+    mkdir -p "$srcdir"/build-${_target} && cd "$srcdir"/build-${_target}
+    "$srcdir"/gcc/configure --prefix=/usr --libexecdir=/usr/lib \
+        --target=${_target} \
+        --with-bugurl=https://github.com/ookiineko-cygport/arch-cygwin/ \
+        --enable-languages=c,c++,lto \
+        --enable-shared --enable-static \
+        --enable-threads=posix --enable-__cxa_atexit \
+        --enable-libstdcxx-filesystem-ts=yes \
+        --with-default-libstdcxx-abi=gcc4-compatible \
+        --enable-linker-build-id \
+        --with-system-zlib --enable-cloog-backend=isl \
+        --enable-lto --enable-libgomp --disable-libssp \
+        --disable-multilib --disable-symvers \
+        --disable-win32-registry --with-dwarf2
+    make
+  done
+}
+
+package() {
+  for _target in ${_targets}; do
+    echo "Installing ${_target} cross gcc"
+    cd "$srcdir"/build-${_target}
+    make DESTDIR="$pkgdir" install
+    ${_target}-strip "$pkgdir"/usr/${_target}/lib/*.dll
+    strip "$pkgdir"/usr/bin/${_target}-*
+    strip "$pkgdir"/usr/lib/gcc/${_target}/${pkgver}/{cc1*,collect2,lto*}
+    ln -s ${_target}-gcc "$pkgdir"/usr/bin/${_target}-cc
+    # mv dlls
+    mkdir -p "$pkgdir"/usr/${_target}/bin/
+    mv "$pkgdir"/usr/${_target}/lib/*.dll "$pkgdir"/usr/${_target}/bin/
+    # clean-up include-fixed
+    mv "$pkgdir"/usr/lib/gcc/${_target}/${pkgver}/include-fixed/*limits.h \
+       "$pkgdir"/usr/lib/gcc/${_target}/${pkgver}/include/
+  done
+  strip "$pkgdir"/usr/bin/*
+  # remove unnecessary files
+  rm -r "$pkgdir"/usr/share
+  rm "$pkgdir"/usr/lib/libcc1.*
+}

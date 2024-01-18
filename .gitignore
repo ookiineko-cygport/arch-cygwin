@@ -1,6 +1,9 @@
 # makepkg
 /*/src/
 /*/pkg/
+/*/*.log
+/*/*.log.*
+/*/logpipe.*
 
 # source tarballs
 /**/*.tar
