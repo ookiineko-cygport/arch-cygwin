@@ -1,0 +1,27 @@
+_realname=w32api-runtime
+pkgname=cygwin-w32api-runtime-bin
+pkgver=11.0.1
+pkgrel=1
+pkgdesc="Windows API libraries for the Cygwin cross toolchain (bootstrap)"
+arch=('any')
+url="http://mingw-w64.sourceforge.net"
+_mirror="https://mirrors.kernel.org/sourceware/cygwin"
+license=('custom')
+provides=('cygwin-w32api-runtime')
+conflicts=('cygwin-w32api-runtime')
+options=('!strip' 'staticlibs' '!emptydirs')
+source=("${_realname}-${pkgver}-1-x86_64.tar.xz::${_mirror}/x86_64/release/${_realname}/${_realname}-${pkgver}-1.tar.xz")
+noextract=("${source[@]%%::*}")
+sha256sums=('2dcb336f93c0dd9d173035bfac367d5bd02b9bee4331030872214470241ee3cb')
+
+_targets="x86_64-pc-cygwin"
+
+package() {
+  for _target in ${_targets}; do
+    echo "Extracting ${_target} tarball"
+    mkdir -p "$pkgdir"/usr/${_target}
+    tar -x -v -f "${_realname}-${pkgver}-1-${_target::-10}.tar.xz" -C "$pkgdir"/usr/${_target} --strip-components=1
+    # remove unnecessary files
+    rm -rf "$pkgdir"/usr/${_target}/share/doc/
+  done
+}
