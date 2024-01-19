@@ -1,0 +1,59 @@
+pkgname=cygwin
+pkgver=3.4.10
+pkgrel=1
+pkgdesc="POSIX compatibility C runtime for Windows"
+arch=('any')
+url="https://www.cygwin.com/"
+license=('GPL')
+groups=('cygwin-toolchain')
+makedepends=('perl' 'cocom' 'cygwin-gcc' 'cygwin-binutils'
+             'cygwin-w32api-runtime' 'cygwin-w32api-headers')
+options=('!strip' '!buildflags' 'staticlibs' '!emptydirs')
+source=("git+https://cygwin.com/git/newlib-cygwin#branch=${pkgname}-${pkgver}-0-g89a1e4a573d4")
+md5sums=('SKIP')
+
+_targets="x86_64-pc-cygwin"
+
+prepare() {
+  cd "$srcdir"/newlib-cygwin/winsup
+  ./autogen.sh
+}
+
+build() {
+  for _target in ${_targets}; do
+    echo "Building for ${_target}"
+    mkdir -p "$srcdir"/build-${_target} && cd "$srcdir"/build-${_target}
+    "$srcdir"/newlib-cygwin/configure --prefix=/usr/${_target} \
+        --host=${_target} --target=${_target} \
+        --disable-dumper --disable-doc \
+        --with-cross-bootstrap
+    make
+  done
+}
+
+package() {
+  for _target in ${_targets}; do
+    echo "Installing for ${_target}"
+    cd "$srcdir"/build-${_target}
+    make DESTDIR="$pkgdir" tooldir=/usr/${_target} install
+    # install licenses
+    if [[ ! -f "$pkgdir"/usr/share/licenses/${pkgname}/COPYING ]]; then
+      install -Dm644 "$pkgdir"/usr/${_target}/share/doc/Cygwin/COPYING \
+          "$pkgdir"/usr/share/licenses/${pkgname}/COPYING
+    fi
+    if [[ ! -f "$pkgdir"/usr/share/licenses/${pkgname}/CYGWIN_LICENSE ]]; then
+      install -Dm644 "$pkgdir"/usr/${_target}/share/doc/Cygwin/CYGWIN_LICENSE \
+          "$pkgdir"/usr/share/licenses/${pkgname}/CYGWIN_LICENSE
+    fi
+    # remove unnecessary files
+    rm -rf "$pkgdir"/usr/${_target}/etc/
+    rm -rf "$pkgdir"/usr/${_target}/share/man/
+    rm -rf "$pkgdir"/usr/${_target}/share/doc/
+    rm -rf "$pkgdir"/usr/${_target}/share/cygwin/
+    find "$pkgdir"/usr/${_target}/bin/ -type f ! -name \*.dll -delete
+    # remove unwanted files
+    rm -r "$pkgdir"/usr/${_target}/include/{rpc,iconv.h,unctrl.h}
+  done
+  # cleanup exes
+  find "$pkgdir" -type f -name \*.exe -delete
+}
