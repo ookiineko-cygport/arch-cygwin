@@ -1,0 +1,31 @@
+pkgname=cygwin-cmake
+pkgver=1
+pkgrel=1
+pkgdesc="CMake wrapper for Cygwin"
+arch=('any')
+url="http://fedoraproject.org/wiki/MinGW"
+license=('GPL')
+groups=('cygwin-toolchain')
+depends=('cmake' 'cygwin-gcc' 'cygwin-pkg-config' 'cygwin-environment')
+optdepends=('cygwin-wine: runtime support')
+source=(cygwin-cmake.sh
+        toolchain-cygwin.cmake)
+md5sums=('SKIP' 'SKIP')
+
+_targets="x86_64-pc-cygwin"
+
+build() {
+  for _target in ${_targets}; do
+    sed "s|@TRIPLE@|${_target}|g;s|@PROCESSOR@|${_target::-10}|g" toolchain-cygwin.cmake > toolchain-${_target}.cmake
+    sed "s|@TRIPLE@|${_target}|g" cygwin-cmake.sh > ${_target}-cmake
+  done
+}
+
+package() {
+  install -d "$pkgdir"/usr/bin
+  install -d "$pkgdir"/usr/share/cygwin
+  for _target in ${_targets}; do
+    install -m 644 toolchain-${_target}.cmake "$pkgdir"/usr/share/cygwin/
+    install -m 755 ${_target}-cmake "$pkgdir"/usr/bin/
+  done
+}
