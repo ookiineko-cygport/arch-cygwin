@@ -1,0 +1,23 @@
+pkgname=cygwin-ldd
+pkgver=1
+pkgrel=1
+pkgdesc="Tool to list dependencies of a DLL (Cygwin)"
+arch=('any')
+url="https://github.com/xantares/mingw-ldd"
+license=('WTFPL')
+groups=('cygwin-toolchain')
+depends=('python-pefile')
+source=("https://github.com/ookiineko-cygport/cygwin-ldd/raw/master/cygwin-ldd.py")
+md5sums=('SKIP')
+
+_targets="x86_64-pc-cygwin"
+
+package() {
+  install -d "$pkgdir"/usr/bin
+  install -d "$pkgdir"/usr/share/cygwin
+  install -m 755 cygwin-ldd.py "$pkgdir"/usr/share/cygwin/
+  for _target in ${_targets}; do
+    cd "$pkgdir"/usr/bin
+    ln -s ../share/cygwin/cygwin-ldd.py ${_target}-ldd
+  done
+}
