@@ -1,0 +1,28 @@
+pkgname=cygwin-pkg-config
+pkgver=1
+pkgrel=1
+pkgdesc="Support pkg-config script (does not depend on any particular version of pkg-config). Useful for pkg-config powered cross-compiling with Cygwin, see http://tinyurl.com/pkg-config-cross for more info"
+arch=('any')
+url="http://pkg-config.freedesktop.org/"
+license=('zlib')
+groups=('cygwin-toolchain')
+depends=('pkg-config' 'cygwin')
+source=(cygwin-pkgconfig.sh)
+install=cygwin-pkg-config.install
+md5sums=('SKIP')
+
+_targets="x86_64-pc-cygwin"
+
+build() {
+  for _target in ${_targets}; do
+    sed "s|@TRIPLE@|${_target}|g" cygwin-pkgconfig.sh > ${_target}-pkg-config
+  done
+}
+
+package() {
+  # This indeed has to go to the "normal" directory tree
+  install -d "$pkgdir"/usr/bin
+  for _target in ${_targets}; do
+    install -m755 ${_target}-pkg-config "$pkgdir"/usr/bin
+  done
+}
