@@ -1,0 +1,26 @@
+pkgname=cygwin-configure
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="configure wrapper for Cygwin"
+arch=('any')
+url="http://fedoraproject.org/wiki/MinGW"
+license=('GPL')
+groups=('cygwin-toolchain')
+depends=('cygwin-gcc' 'cygwin-pkg-config' 'cygwin-environment')
+source=(cygwin-configure.sh)
+md5sums=('SKIP')
+
+_targets="x86_64-pc-cygwin"
+
+build() {
+  for _target in ${_targets}; do
+    sed "s|@TRIPLE@|${_target}|g" cygwin-configure.sh > ${_target}-configure
+  done
+}
+
+package() {
+  install -d "$pkgdir"/usr/bin
+  for _target in ${_targets}; do
+    install -m 755 ${_target}-configure "$pkgdir"/usr/bin/
+  done
+}
