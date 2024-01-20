@@ -9,6 +9,7 @@ groups=('cygwin-toolchain')
 depends=('zlib' 'libisl' 'libmpc'
          'cygwin' 'cygwin-binutils'
          'cygwin-w32api-runtime' 'cygwin-w32api-headers')
+optdepends=('cygwin-default-manifest: default Windows compatibility manifest')
 options=('!strip' 'staticlibs' '!emptydirs' '!buildflags')
 source=("https://ftp.gnu.org/gnu/gcc/gcc-${pkgver}/gcc-${pkgver}.tar.xz"
         cygwin-sysv-abi.patch

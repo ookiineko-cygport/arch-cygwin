@@ -1,0 +1,36 @@
+pkgname=cygwin-default-manifest
+pkgver=6.4
+pkgrel=1
+pkgdesc="Default application manifest for the Cygwin cross toolchain"
+arch=('any')
+url="https://cygwin.com/"
+license=('BSD')
+groups=('cygwin-toolchain')
+makedepends=('cygwin-gcc' 'cygwin-binutils')
+source=("git+https://cygwin.com/git/cygwin-apps/windows-default-manifest#tag=release-${pkgver//\./_}")
+md5sums=('SKIP')
+
+_targets="x86_64-pc-cygwin"
+
+prepare() {
+  cd "$srcdir"/windows-default-manifest
+  autoreconf -ifv
+}
+
+build() {
+  for _target in ${_targets}; do
+    echo "Building for ${_target}"
+    mkdir -p "$srcdir"/build-${_target} && cd "$srcdir"/build-${_target}
+    "$srcdir"/windows-default-manifest/configure \
+        --prefix=/usr/${_target} --host=${_target}
+    make
+  done
+}
+
+package() {
+  for _target in ${_targets}; do
+    echo "Installing for ${_target}"
+    cd "$srcdir"/build-${_target}
+    make DESTDIR="$pkgdir" tooldir=/usr/${_target} install
+  done
+}
