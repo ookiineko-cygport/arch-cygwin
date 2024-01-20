@@ -1,0 +1,15 @@
+pkgname=cygwin-environment
+pkgver=1
+pkgrel=1
+pkgdesc="Script providing common environment variables and functions for Cygwin"
+arch=('any')
+url="http://fedoraproject.org/wiki/MinGW"
+license=('BSD')
+groups=('cygwin-toolchain')
+source=(cygwin-env.sh)
+md5sums=('SKIP')
+
+package() {
+  install -d "$pkgdir"/usr/bin
+  install -m 755 cygwin-env.sh "$pkgdir"/usr/bin/cygwin-env
+}
