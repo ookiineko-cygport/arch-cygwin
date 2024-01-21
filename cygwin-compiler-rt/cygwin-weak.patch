@@ -1,0 +1,11 @@
+--- origsrc/compiler-rt-14.0.5.src/lib/builtins/emutls.c	2022-06-10 22:47:36.000000000 +0800
++++ src/compiler-rt-14.0.5.src/lib/builtins/emutls.c	2023-12-14 23:27:00.176093400 +0800
+@@ -374,7 +374,7 @@
+   return array;
+ }
+ 
+-#ifndef _WIN32
++#if !defined(_WIN32) && !defined(__CYGWIN__)
+ // Our emulated TLS implementation relies on local state (e.g. for the pthread
+ // key), and if we duplicate this state across different shared libraries,
+ // accesses to the same TLS variable from different shared libraries will yield

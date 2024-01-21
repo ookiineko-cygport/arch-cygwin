@@ -1,0 +1,21 @@
+--- origsrc/compiler-rt-8.0.1.src/cmake/config-ix.cmake	2019-08-27 21:25:49.733158500 -0400
++++ src/compiler-rt-8.0.1.src/cmake/config-ix.cmake	2019-08-27 21:59:59.356608500 -0400
+@@ -37,6 +37,18 @@ if (COMPILER_RT_HAS_NODEFAULTLIBS_FLAG)
+   elseif (COMPILER_RT_HAS_GCC_LIB)
+     list(APPEND CMAKE_REQUIRED_LIBRARIES gcc)
+   endif ()
++  if (CYGWIN)
++    # Cygwin requires quite a few "C" runtime libraries in order for basic
++    # programs to link successfully with -nodefaultlibs.
++    if (COMPILER_RT_USE_BUILTINS_LIBRARY)
++      set(CYGWIN_RUNTIME ${COMPILER_RT_BUILTINS_LIBRARY})
++    else ()
++      set(CYGWIN_RUNTIME gcc_s gcc)
++    endif()
++    set(CYGWIN_LIBRARIES ${MINGW_RUNTIME} cygwin advapi32
++                        shell32 user32 kernel32 ${CYGWIN_RUNTIME})
++    list(APPEND CMAKE_REQUIRED_LIBRARIES ${CYGWIN_LIBRARIES})
++  endif()
+   if (MINGW)
+     # Mingw64 requires quite a few "C" runtime libraries in order for basic
+     # programs to link successfully with -nodefaultlibs.

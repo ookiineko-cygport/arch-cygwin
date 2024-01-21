@@ -1,0 +1,33 @@
+--- origsrc/compiler-rt-9.0.1.src/lib/builtins/CMakeLists.txt	2019-12-11 14:15:30.000000000 -0500
++++ src/compiler-rt-9.0.1.src/lib/builtins/CMakeLists.txt	2020-05-03 01:41:15.351503000 -0400
+@@ -253,7 +253,7 @@ if (NOT MSVC)
+   filter_builtin_sources(x86_64_SOURCES EXCLUDE x86_64_SOURCES "${x86_64_SOURCES};${GENERIC_SOURCES}")
+   set(x86_64h_SOURCES ${x86_64_SOURCES})
+ 
+-  if (WIN32)
++  if (WIN32 OR CYGWIN)
+     set(x86_64_SOURCES
+       ${x86_64_SOURCES}
+       x86_64/chkstk.S
+@@ -279,7 +279,7 @@ if (NOT MSVC)
+   )
+   filter_builtin_sources(i386_SOURCES EXCLUDE i386_SOURCES "${i386_SOURCES};${GENERIC_SOURCES}")
+ 
+-  if (WIN32)
++  if (WIN32 OR CYGWIN)
+     set(i386_SOURCES
+       ${i386_SOURCES}
+       i386/chkstk.S
+--- origsrc/compiler-rt-9.0.1.src/lib/builtins/int_lib.h	2019-12-11 14:15:30.000000000 -0500
++++ src/compiler-rt-9.0.1.src/lib/builtins/int_lib.h	2020-05-03 01:54:43.507880800 -0400
+@@ -48,8 +48,8 @@
+ #define XSTR(a) STR(a)
+ #define SYMBOL_NAME(name) XSTR(__USER_LABEL_PREFIX__) #name
+ 
+-#if defined(__ELF__) || defined(__MINGW32__) || defined(__wasm__) ||           \
+-    defined(_AIX)
++#if defined(__ELF__) || defined(__MINGW32__) || defined(__CYGWIN__) ||         \
++    defined(__wasm__) || defined(_AIX)
+ #define COMPILER_RT_ALIAS(name, aliasname) \
+   COMPILER_RT_ABI __typeof(name) aliasname __attribute__((__alias__(#name)));
+ #elif defined(__APPLE__)
