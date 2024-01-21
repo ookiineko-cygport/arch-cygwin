@@ -1,0 +1,33 @@
+--- origsrc/llvm-8.0.1.src/lib/Target/X86/X86TargetMachine.cpp	2019-05-03 20:24:26.000000000 -0400
++++ src/llvm-8.0.1.src/lib/Target/X86/X86TargetMachine.cpp	2019-07-21 17:10:03.384275400 -0400
+@@ -191,8 +191,10 @@ static Reloc::Model getEffectiveRelocMod
+   return *RM;
+ }
+ 
+-static CodeModel::Model getEffectiveX86CodeModel(Optional<CodeModel::Model> CM,
+-                                                 bool JIT, bool Is64Bit) {
++static CodeModel::Model getEffectiveX86CodeModel(const Triple &TT,
++                                                 Optional<CodeModel::Model> CM,
++                                                 bool JIT) {
++  bool Is64Bit = TT.getArch() == Triple::x86_64;
+   if (CM) {
+     if (*CM == CodeModel::Tiny)
+       report_fatal_error("Target does not support the tiny CodeModel");
+@@ -200,6 +202,8 @@ static CodeModel::Model getEffectiveX86C
+   }
+   if (JIT)
+     return Is64Bit ? CodeModel::Large : CodeModel::Small;
++  if (TT.isWindowsCygwinEnvironment())
++    return Is64Bit ? CodeModel::Medium : CodeModel::Small;
+   return CodeModel::Small;
+ }
+ 
+@@ -214,7 +218,7 @@ X86TargetMachine::X86TargetMachine(const
+     : LLVMTargetMachine(
+           T, computeDataLayout(TT), TT, CPU, FS, Options,
+           getEffectiveRelocModel(TT, JIT, RM),
+-          getEffectiveX86CodeModel(CM, JIT, TT.getArch() == Triple::x86_64),
++          getEffectiveX86CodeModel(TT, CM, JIT),
+           OL),
+       TLOF(createTLOF(getTargetTriple())) {
+   // Windows stack unwinder gets confused when execution flow "falls through"

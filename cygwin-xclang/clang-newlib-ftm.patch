@@ -1,0 +1,11 @@
+--- origsrc/cfe-5.0.1.src/lib/Headers/limits.h	2014-02-19 17:38:18.000000000 -0600
++++ src/cfe-5.0.1.src/lib/Headers/limits.h	2018-01-20 23:52:51.683489700 -0600
+@@ -104,7 +104,7 @@
+    that we don't have something like #pragma poison that could be used to
+    deprecate a macro - the code should just use LLONG_MAX and friends.
+  */
+-#if defined(__GNU_LIBRARY__) ? defined(__USE_GNU) : !defined(__STRICT_ANSI__)
++#if defined (__GNU_LIBRARY__) ? defined (__USE_GNU) : defined (__NEWLIB__) ? __GNU_VISIBLE : !defined (__STRICT_ANSI__)
+ 
+ #undef   LONG_LONG_MIN
+ #undef   LONG_LONG_MAX

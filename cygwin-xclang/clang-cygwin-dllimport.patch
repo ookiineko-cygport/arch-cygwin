@@ -1,0 +1,15 @@
+Backport of https://github.com/okuoku/llvm-project/commit/b749e9c576f6e1ddb068a13af100372650f213f2
+
+--- origsrc/clang-12.0.1.src/lib/CodeGen/CodeGenModule.cpp	2020-10-07 18:10:48.000000000 +0800
++++ src/clang-12.0.1.src/lib/CodeGen/CodeGenModule.cpp	2023-07-25 20:43:02.892279800 +0800
+@@ -845,8 +845,8 @@
+     return false;
+ 
+   const llvm::Triple &TT = CGM.getTriple();
+-  if (TT.isWindowsGNUEnvironment()) {
+-    // In MinGW, variables without DLLImport can still be automatically
++  if (TT.isOSCygMing()) {
++    // In Cygwin and MinGW, variables without DLLImport can still be automatically
+     // imported from a DLL by the linker; don't mark variables that
+     // potentially could come from another DLL as DSO local.
+     if (GV->isDeclarationForLinker() && isa<llvm::GlobalVariable>(GV) &&

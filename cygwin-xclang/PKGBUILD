@@ -1,0 +1,125 @@
+pkgname=cygwin-xclang
+pkgver=15.0.7
+pkgrel=1
+pkgdesc="Cross Clang for the Cygwin cross-compiler (experimental)"
+arch=('x86_64')
+url="https://llvm.org/"
+license=('custom:Apache 2.0 with LLVM Exception')
+groups=('cygwin-toolchain')
+depends=('gcc-libs' 'zlib' 'zstd' 'libxml2' 'libedit' 'ncurses' 'python'
+         'cygwin' 'cygwin-w32api-runtime' 'cygwin-w32api-headers'
+         'cygwin-gcc' 'cygwin-binutils' 'cygwin-default-manifest')
+makedepends=('cmake' 'ninja')
+options=('!lto' '!debug') # https://github.com/llvm/llvm-project/issues/57740
+source=("https://github.com/llvm/llvm-project/releases/download/llvmorg-${pkgver}/llvm-${pkgver}.src.tar.xz"
+        "https://github.com/llvm/llvm-project/releases/download/llvmorg-${pkgver}/clang-${pkgver}.src.tar.xz"
+        "https://github.com/llvm/llvm-project/releases/download/llvmorg-${pkgver}/cmake-${pkgver}.src.tar.xz"
+        llvm-cygwin-cmodel-medium.patch
+        llvm-cygwin-soname.patch
+        llvm-cygwin-dllimport.patch
+        llvm-cygming-visibility.patch
+        llvm-cygwin-visibility.patch
+        clang-enable-fstack-protector-strong-by-default.patch
+        clang-fedora-default-dwarf4.patch
+        clang-cygwin-basic.patch
+        clang-cygwin-driver.patch
+        clang-newlib-ftm.patch
+        clang-cygwin-oslibname.patch
+        clang-cygwin-dllimport.patch
+        clang-cygwin-cxx-template.patch
+        clang-cygwin-cxx-vtable.patch
+        clang-cygming-emutls.patch)
+sha256sums=('4ad8b2cc8003c86d0078d15d987d84e3a739f24aae9033865c027abae93ee7a4'
+            'a6b673ef15377fb46062d164e8ddc4d05c348ff8968f015f7f4af03f51000067'
+            '8986f29b634fdaa9862eedda78513969fe9788301c9f2d938f4c10a3e7a3e7ea'
+            'b2918ec6be7294ef32aebe1620bc121171e1280467d6d8b66bd349f6f27ed5ed'
+            'b2efcfdea18332651c21adf753bc86c94e96f92f542d43c39f1c136c43409f51'
+            '90e7ce5ac0502d7424146c5d8957531d519df6c41e2debe13f75fffb2be5150a'
+            'dfc7cbd4b063bd0f7481ac07832aaa51bcedf8d71e72ccc94cf939e1a9635b39'
+            'c1ddf190839c8c9a33142bb625823c8e3c5fafdd1b2ac883694c5e2ba9f339d1'
+            'ffa81dcd3df2f54ebc2e1f6840fa16f1bc59070e00d065fe5cf5fe7fb451930c'
+            'e4831e8966867963cde1859a7ddacd268bcb18b419c4d47aaedddc6c7b596f83'
+            '8bafacd1278c1783618613f901ae470f24fbed7a99dfc8f8b529a274c8bb27f6'
+            '10cba55a0ff4c67fa0b99f66067cad73546f36d490b5aed14d2b89110b15cc8e'
+            'b0931579768e17a1ab9c61244d952a1d812429977cdc6a002e74839649aa64e7'
+            'c77b571b134bb70e8060793b041a4063d27f13dda1dfcf388c26a1da70ab13c3'
+            '1b9e97ffa1734019a667a9e4a1b6a780442ed528f8de7e53626ce07b53621807'
+            '96751625970d5e0a4360e23276688374e6546bffb9755f9624e9dbd519b2b870'
+            '06b93d2130bf6e6b4130890212e25ec368d0c4c5cef5cf19ba5f793d6d462233'
+            'd2354cc4e97c589f28a410ea44a3bb9f6210367de18d99e3880115c136611acb')
+
+_targets="x86_64-pc-cygwin"
+
+prepare() {
+  ln -sf llvm-${pkgver}.src llvm
+  ln -sf clang-${pkgver}.src clang
+  ln -sf cmake-${pkgver}.src cmake
+
+  # remove files created by patch
+  rm -f clang/lib/Driver/ToolChains/Cygwin.{cpp,h}
+
+  pushd clang
+  patch -p2 -i ../clang-enable-fstack-protector-strong-by-default.patch
+  patch -p2 -i ../clang-fedora-default-dwarf4.patch
+  patch -p2 -i ../clang-cygwin-basic.patch
+  patch -p2 -i ../clang-cygwin-driver.patch
+  patch -p2 -i ../clang-newlib-ftm.patch
+  patch -p2 -i ../clang-cygwin-oslibname.patch
+  patch -p2 -i ../clang-cygwin-dllimport.patch
+  patch -p2 -i ../clang-cygwin-cxx-template.patch
+  patch -p2 -i ../clang-cygwin-cxx-vtable.patch
+  patch -p2 -i ../clang-cygming-emutls.patch
+  popd
+
+  cd llvm
+  patch -p2 -i ../llvm-cygwin-cmodel-medium.patch
+  patch -p2 -i ../llvm-cygwin-soname.patch
+  patch -p2 -i ../llvm-cygwin-dllimport.patch
+  patch -p1 -i ../llvm-cygming-visibility.patch
+  patch -p2 -i ../llvm-cygwin-visibility.patch
+}
+
+build() {
+  cd llvm
+  cmake -B build -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/opt/cygwin-llvm \
+        -DENABLE_LINKER_BUILD_ID=ON \
+        -DLLVM_BUILD_LLVM_DYLIB=ON \
+        -DLLVM_LINK_LLVM_DYLIB=ON \
+        -DLLVM_ENABLE_BINDINGS=OFF \
+        -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
+        -DLLVM_INCLUDE_BENCHMARKS=OFF \
+        -DLLVM_INCLUDE_EXAMPLES=OFF \
+        -DLLVM_INCLUDE_TESTS=OFF \
+        -DLLVM_INCLUDE_DOCS=OFF \
+        -DLLVM_TARGETS_TO_BUILD="X86" \
+        -DLLVM_ENABLE_PROJECTS="clang" \
+        -DCLANG_LINK_CLANG_DYLIB=ON \
+        -DCLANG_INCLUDE_TESTS=OFF \
+        -DCLANG_INCLUDE_DOCS=OFF
+  ninja -C build
+}
+
+package() {
+  DESTDIR="$pkgdir" ninja -C llvm/build install
+
+  install -Dm755 llvm/build/bin/llvm-config "$pkgdir"/opt/cygwin-llvm/bin/
+
+  mkdir -p "$pkgdir"/usr/bin
+  for _target in ${_targets}; do
+    ln -sf /opt/cygwin-llvm/bin/clang "$pkgdir"/usr/bin/${_target}-clang
+    ln -sf /opt/cygwin-llvm/bin/clang++ "$pkgdir"/usr/bin/${_target}-clang++
+  done
+
+  install -Dm644 llvm/LICENSE.TXT "$pkgdir"/usr/share/licenses/${pkgname}/LICENSE
+
+  # remove unnecessary files
+  cd "$pkgdir"/opt/cygwin-llvm
+  rm -rf share include libexec lib/cmake
+  find lib -maxdepth 1 -type f -name \*.a -delete
+  cd bin
+  find -maxdepth 1 \( -type f -o -type l \) \( -name llvm-\* -a ! -name llvm-config -delete \)
+  rm -f c-index-test diagtool clang-check clang-extdef-mapping clang-format \
+        clang-offload-bundler clang-refactor clang-rename clang-scan-deps
+}

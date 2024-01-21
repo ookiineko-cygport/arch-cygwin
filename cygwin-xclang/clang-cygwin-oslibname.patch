@@ -1,0 +1,17 @@
+--- origsrc/clang-9.0.1.src/lib/Driver/ToolChain.cpp	2023-05-22 16:33:44.615770900 +0800
++++ src/clang-9.0.1.src/lib/Driver/ToolChain.cpp	2023-05-22 18:20:14.287641500 +0800
+@@ -346,6 +346,14 @@
+     return "sunos";
+   case llvm::Triple::AIX:
+     return "aix";
++  case llvm::Triple::Win32:
++    switch (Triple.getEnvironment()) {
++      case llvm::Triple::Cygnus:
++        return "cygwin";
++      default:
++        break;
++    }
++  // fall-through
+   default:
+     return getOS();
+   }

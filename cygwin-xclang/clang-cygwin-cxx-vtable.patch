@@ -1,0 +1,24 @@
+These are most likely old forgotten bugs, and it somehow breaks libc++ 14 build now
+
+--- origsrc/clang-14.0.5.src/lib/CodeGen/ItaniumCXXABI.cpp	2022-06-10 22:47:36.000000000 +0800
++++ src/clang-14.0.5.src/lib/CodeGen/ItaniumCXXABI.cpp	2024-01-15 15:50:34.418526200 +0800
+@@ -3631,7 +3631,7 @@
+           !CGM.getContext()
+                .getTargetInfo()
+                .getTriple()
+-               .isWindowsGNUEnvironment())
++               .isOSCygMing())
+         return CGM.getVTableLinkage(RD);
+     }
+ 
+--- origsrc/clang-14.0.5.src/lib/Sema/SemaDeclCXX.cpp	2023-12-15 17:25:48.994061000 +0800
++++ src/clang-14.0.5.src/lib/Sema/SemaDeclCXX.cpp	2023-12-15 23:46:54.557540300 +0800
+@@ -5998,7 +5998,7 @@
+     }
+   } MarkingDllexportedContext(S, Class, ClassAttr->getLocation());
+ 
+-  if (S.Context.getTargetInfo().getTriple().isWindowsGNUEnvironment())
++  if (S.Context.getTargetInfo().getTriple().isOSCygMing())
+     S.MarkVTableUsed(Class->getLocation(), Class, true);
+ 
+   for (Decl *Member : Class->decls()) {

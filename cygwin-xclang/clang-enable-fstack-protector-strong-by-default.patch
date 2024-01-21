@@ -1,0 +1,32 @@
+From 75c02a21f954574675020e1d76391b4896211fc7 Mon Sep 17 00:00:00 2001
+From: Evangelos Foutras <evangelos@foutrelis.com>
+Date: Sun, 24 Apr 2022 06:29:44 +0300
+Subject: [PATCH] Enable -fstack-protector-strong by default
+
+---
+ clang/lib/Driver/ToolChains/Linux.h | 5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/clang/lib/Driver/ToolChains/Linux.h b/clang/lib/Driver/ToolChains/Linux.h
+index a5648d79d655..3c4546cb9204 100644
+--- a/clang/lib/Driver/ToolChains/Linux.h
++++ b/clang/lib/Driver/ToolChains/Linux.h
+@@ -10,6 +10,7 @@
+ #define LLVM_CLANG_LIB_DRIVER_TOOLCHAINS_LINUX_H
+ 
+ #include "Gnu.h"
++#include "clang/Basic/LangOptions.h"
+ #include "clang/Driver/ToolChain.h"
+ 
+ namespace clang {
+@@ -46,6 +47,10 @@ public:
+   IsAArch64OutlineAtomicsDefault(const llvm::opt::ArgList &Args) const override;
+   bool isPIEDefault(const llvm::opt::ArgList &Args) const override;
+   bool IsMathErrnoDefault() const override;
++  LangOptions::StackProtectorMode
++  GetDefaultStackProtectorLevel(bool KernelOrKext) const override {
++    return LangOptions::SSPStrong;
++  }
+   SanitizerMask getSupportedSanitizers() const override;
+   void addProfileRTLibs(const llvm::opt::ArgList &Args,
+                         llvm::opt::ArgStringList &CmdArgs) const override;

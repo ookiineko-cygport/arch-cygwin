@@ -1,0 +1,130 @@
+Backport of https://reviews.llvm.org/D130121 and https://reviews.llvm.org/D131661
+
+diff --git a/lib/IR/Mangler.cpp b/lib/IR/Mangler.cpp
+index b8e3e40e4c1d..9011f5db6a40 100644
+--- a/lib/IR/Mangler.cpp
++++ b/lib/IR/Mangler.cpp
+@@ -210,18 +210,46 @@ static bool canBeUnquotedInDirective(StringRef Name) {
+ 
+ void llvm::emitLinkerFlagsForGlobalCOFF(raw_ostream &OS, const GlobalValue *GV,
+                                         const Triple &TT, Mangler &Mangler) {
+-  if (!GV->hasDLLExportStorageClass() || GV->isDeclaration())
+-    return;
++  if (GV->hasDLLExportStorageClass() && !GV->isDeclaration()) {
+ 
+-  if (TT.isWindowsMSVCEnvironment())
+-    OS << " /EXPORT:";
+-  else
+-    OS << " -export:";
++    if (TT.isWindowsMSVCEnvironment())
++      OS << " /EXPORT:";
++    else
++      OS << " -export:";
++
++    bool NeedQuotes = GV->hasName() && !canBeUnquotedInDirective(GV->getName());
++    if (NeedQuotes)
++      OS << "\"";
++    if (TT.isWindowsGNUEnvironment() || TT.isWindowsCygwinEnvironment()) {
++      std::string Flag;
++      raw_string_ostream FlagOS(Flag);
++      Mangler.getNameWithPrefix(FlagOS, GV, false);
++      FlagOS.flush();
++      if (Flag[0] == GV->getParent()->getDataLayout().getGlobalPrefix())
++        OS << Flag.substr(1);
++      else
++        OS << Flag;
++    } else {
++      Mangler.getNameWithPrefix(OS, GV, false);
++    }
++    if (NeedQuotes)
++      OS << "\"";
++
++    if (!GV->getValueType()->isFunctionTy()) {
++      if (TT.isWindowsMSVCEnvironment())
++        OS << ",DATA";
++      else
++        OS << ",data";
++    }
++  }
++  if (GV->hasHiddenVisibility() && !GV->isDeclaration() && TT.isOSCygMing()) {
++
++    OS << " -exclude-symbols:";
++
++    bool NeedQuotes = GV->hasName() && !canBeUnquotedInDirective(GV->getName());
++    if (NeedQuotes)
++      OS << "\"";
+ 
+-  bool NeedQuotes = GV->hasName() && !canBeUnquotedInDirective(GV->getName());
+-  if (NeedQuotes)
+-    OS << "\"";
+-  if (TT.isWindowsGNUEnvironment() || TT.isWindowsCygwinEnvironment()) {
+     std::string Flag;
+     raw_string_ostream FlagOS(Flag);
+     Mangler.getNameWithPrefix(FlagOS, GV, false);
+@@ -230,17 +258,9 @@ void llvm::emitLinkerFlagsForGlobalCOFF(raw_ostream &OS, const GlobalValue *GV,
+       OS << Flag.substr(1);
+     else
+       OS << Flag;
+-  } else {
+-    Mangler.getNameWithPrefix(OS, GV, false);
+-  }
+-  if (NeedQuotes)
+-    OS << "\"";
+ 
+-  if (!GV->getValueType()->isFunctionTy()) {
+-    if (TT.isWindowsMSVCEnvironment())
+-      OS << ",DATA";
+-    else
+-      OS << ",data";
++    if (NeedQuotes)
++      OS << "\"";
+   }
+ }
+ 
+diff --git a/cmake/modules/HandleLLVMOptions.cmake b/cmake/modules/HandleLLVMOptions.cmake
+index dba96d1f0815d..ba525e62f3966 100644
+--- a/cmake/modules/HandleLLVMOptions.cmake
++++ b/cmake/modules/HandleLLVMOptions.cmake
+@@ -351,8 +351,11 @@ if( LLVM_ENABLE_PIC )
+   endif()
+ endif()
+ 
+-if(NOT WIN32 AND NOT CYGWIN AND NOT (${CMAKE_SYSTEM_NAME} MATCHES "AIX"))
+-  # MinGW warns if -fvisibility-inlines-hidden is used.
++if((NOT (${CMAKE_SYSTEM_NAME} MATCHES "AIX")) AND
++   (NOT (WIN32 OR CYGWIN) OR (MINGW AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")))
++  # GCC for MinGW does nothing about -fvisibility-inlines-hidden, but warns
++  # about use of the attributes. As long as we don't use the attributes (to
++  # override the default) we shouldn't set the command line options either.
+   # GCC on AIX warns if -fvisibility-inlines-hidden is used and Clang on AIX doesn't currently support visibility.
+   check_cxx_compiler_flag("-fvisibility-inlines-hidden" SUPPORTS_FVISIBILITY_INLINES_HIDDEN_FLAG)
+   append_if(SUPPORTS_FVISIBILITY_INLINES_HIDDEN_FLAG "-fvisibility-inlines-hidden" CMAKE_CXX_FLAGS)
+diff --git a/include/llvm/Support/Compiler.h b/include/llvm/Support/Compiler.h
+index c4cfea1fb3c8b..bf299bc1d0d7f 100644
+--- a/include/llvm/Support/Compiler.h
++++ b/include/llvm/Support/Compiler.h
+@@ -113,8 +113,9 @@
+ /// LLVM_EXTERNAL_VISIBILITY - classes, functions, and variables marked with
+ /// this attribute will be made public and visible outside of any shared library
+ /// they are linked in to.
+-#if __has_attribute(visibility) && !defined(__MINGW32__) &&                    \
+-    !defined(__CYGWIN__) && !defined(_WIN32)
++#if __has_attribute(visibility) &&                                             \
++    (!(defined(_WIN32) || defined(__CYGWIN__)) ||                              \
++     (defined(__MINGW32__) && defined(__clang__)))
+ #define LLVM_LIBRARY_VISIBILITY __attribute__ ((visibility("hidden")))
+ #if defined(LLVM_BUILD_LLVM_DYLIB) || defined(LLVM_BUILD_SHARED_LIBS)
+ #define LLVM_EXTERNAL_VISIBILITY __attribute__((visibility("default")))
+diff --git a/lib/Target/CMakeLists.txt b/lib/Target/CMakeLists.txt
+index c0c2bc36a6e47..0fec6d1fb6901 100644
+--- a/lib/Target/CMakeLists.txt
++++ b/lib/Target/CMakeLists.txt
+@@ -22,7 +22,7 @@ add_llvm_component_library(LLVMTarget
+ # When building shared objects for each target there are some internal APIs
+ # that are used across shared objects which we can't hide.
+ if (NOT BUILD_SHARED_LIBS AND NOT APPLE AND
+-    NOT MINGW AND
++    (NOT (WIN32 OR CYGWIN) OR (MINGW AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")) AND
+     NOT (${CMAKE_SYSTEM_NAME} MATCHES "AIX") AND
+     NOT DEFINED CMAKE_CXX_VISIBILITY_PRESET)
+   # Set default visibility to hidden, so we don't export all the Target classes

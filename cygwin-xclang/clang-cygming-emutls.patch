@@ -1,0 +1,57 @@
+Backport of https://github.com/llvm/llvm-project/commit/fbfe1db4a95a73ed6a0767db0ab7d449fc03405e
+
+--- a/clang/include/clang/Basic/CodeGenOptions.def
++++ b/clang/include/clang/Basic/CodeGenOptions.def
+@@ -88,7 +88,6 @@ CODEGENOPT(EmitGcovArcs      , 1, 0) ///< Emit coverage data files, aka. GCDA.
+ CODEGENOPT(EmitGcovNotes     , 1, 0) ///< Emit coverage "notes" files, aka GCNO.
+ CODEGENOPT(EmitOpenCLArgMetadata , 1, 0) ///< Emit OpenCL kernel arg metadata.
+ CODEGENOPT(EmulatedTLS       , 1, 0) ///< Set by default or -f[no-]emulated-tls.
+-CODEGENOPT(ExplicitEmulatedTLS , 1, 0) ///< Set if -f[no-]emulated-tls is used.
+ /// Embed Bitcode mode (off/all/bitcode/marker).
+ ENUM_CODEGENOPT(EmbedBitcode, EmbedBitcodeKind, 2, Embed_Off)
+ /// Inline asm dialect, -masm=(att|intel)
+diff --git a/clang/lib/CodeGen/BackendUtil.cpp b/clang/lib/CodeGen/BackendUtil.cpp
+index f4a4f1cd22ab98..aff277f59c0549 100644
+--- a/clang/lib/CodeGen/BackendUtil.cpp
++++ b/clang/lib/CodeGen/BackendUtil.cpp
+@@ -440,7 +440,7 @@ static bool initTargetOptions(DiagnosticsEngine &Diags,
+       CodeGenOpts.UniqueBasicBlockSectionNames;
+   Options.TLSSize = CodeGenOpts.TLSSize;
+   Options.EmulatedTLS = CodeGenOpts.EmulatedTLS;
+-  Options.ExplicitEmulatedTLS = CodeGenOpts.ExplicitEmulatedTLS;
++  Options.ExplicitEmulatedTLS = true;
+   Options.DebuggerTuning = CodeGenOpts.getDebuggerTuning();
+   Options.EmitStackSizeSection = CodeGenOpts.StackSizeSection;
+   Options.StackUsageOutput = CodeGenOpts.StackUsageOutput;
+
+--- a/clang/lib/Frontend/CompilerInvocation.cpp
++++ b/clang/lib/Frontend/CompilerInvocation.cpp
+@@ -1492,13 +1492,8 @@ void CompilerInvocation::GenerateCodeGenArgs(
+                 F.Filename, SA);
+   }
+ 
+-  // TODO: Consider removing marshalling annotations from f[no_]emulated_tls.
+-  //  That would make it easy to generate the option only **once** if it was
+-  //  explicitly set to non-default value.
+-  if (Opts.ExplicitEmulatedTLS) {
+-    GenerateArg(
+-        Args, Opts.EmulatedTLS ? OPT_femulated_tls : OPT_fno_emulated_tls, SA);
+-  }
++  GenerateArg(
++      Args, Opts.EmulatedTLS ? OPT_femulated_tls : OPT_fno_emulated_tls, SA);
+ 
+   if (Opts.FPDenormalMode != llvm::DenormalMode::getIEEE())
+     GenerateArg(Args, OPT_fdenormal_fp_math_EQ, Opts.FPDenormalMode.str(), SA);
+@@ -1862,9 +1857,9 @@ bool CompilerInvocation::ParseCodeGenArgs(CodeGenOptions &Opts, ArgList &Args,
+     Opts.LinkBitcodeFiles.push_back(F);
+   }
+ 
+-  if (Args.getLastArg(OPT_femulated_tls) ||
+-      Args.getLastArg(OPT_fno_emulated_tls)) {
+-    Opts.ExplicitEmulatedTLS = true;
++  if (!Args.getLastArg(OPT_femulated_tls) &&
++      !Args.getLastArg(OPT_fno_emulated_tls)) {
++    Opts.EmulatedTLS = T.hasDefaultEmulatedTLS();
+   }
+ 
+   if (Arg *A = Args.getLastArg(OPT_ftlsmodel_EQ)) {

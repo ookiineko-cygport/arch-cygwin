@@ -1,0 +1,25 @@
+From 1f68d73910ddee1beaf3582480b8a9738c941a43 Mon Sep 17 00:00:00 2001
+From: Konrad Kleine <kkleine@redhat.com>
+Date: Thu, 24 Mar 2022 09:44:21 +0100
+Subject: [PATCH] Produce DWARF4 by default
+
+Have a look at the following commit to see when the move from DWARF 4 to 5 first happened upstream:
+
+https://github.com/llvm/llvm-project/commit/d3b26dea16108c427b19b5480c9edc76edf8f5b4?diff=unified
+---
+ clang/include/clang/Driver/ToolChain.h | 2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/clang/include/clang/Driver/ToolChain.h b/clang/include/clang/Driver/ToolChain.h
+index f20ab164531b..53c86ee82936 100644
+--- a/clang/include/clang/Driver/ToolChain.h
++++ b/clang/include/clang/Driver/ToolChain.h
+@@ -535,7 +535,7 @@ public:
+   
+   // Return the DWARF version to emit, in the absence of arguments
+   // to the contrary.
+-  virtual unsigned GetDefaultDwarfVersion() const { return 5; }
++  virtual unsigned GetDefaultDwarfVersion() const { return 4; }
+ 
+   // Some toolchains may have different restrictions on the DWARF version and
+   // may need to adjust it. E.g. NVPTX may need to enforce DWARF2 even when host

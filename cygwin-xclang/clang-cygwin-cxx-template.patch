@@ -1,0 +1,40 @@
+--- origsrc/clang-14.0.5.src/lib/Sema/SemaDeclCXX.cpp	2022-06-10 22:47:36.000000000 +0800
++++ src/clang-14.0.5.src/lib/Sema/SemaDeclCXX.cpp	2023-12-15 17:16:22.237431000 +0800
+@@ -6290,7 +6290,7 @@
+   // declarations, except in MinGW mode.
+   if (ClassExported && !ClassAttr->isInherited() &&
+       TSK == TSK_ExplicitInstantiationDeclaration &&
+-      !Context.getTargetInfo().getTriple().isWindowsGNUEnvironment()) {
++      !Context.getTargetInfo().getTriple().isOSCygMing()) {
+     Class->dropAttr<DLLExportAttr>();
+     return;
+   }
+--- origsrc/clang-14.0.5.src/lib/Sema/SemaTemplate.cpp	2022-06-10 22:47:36.000000000 +0800
++++ src/clang-14.0.5.src/lib/Sema/SemaTemplate.cpp	2023-12-15 17:17:26.308809000 +0800
+@@ -9544,7 +9544,7 @@
+                                        : TSK_ExplicitInstantiationDeclaration;
+ 
+   if (TSK == TSK_ExplicitInstantiationDeclaration &&
+-      !Context.getTargetInfo().getTriple().isWindowsGNUEnvironment()) {
++      !Context.getTargetInfo().getTriple().isOSCygMing()) {
+     // Check for dllexport class template instantiation declarations,
+     // except for MinGW mode.
+     for (const ParsedAttr &AL : Attr) {
+@@ -9608,7 +9608,7 @@
+     = PrevDecl ? PrevDecl->getTemplateSpecializationKind() : TSK_Undeclared;
+ 
+   if (TSK == TSK_ExplicitInstantiationDefinition && PrevDecl != nullptr &&
+-      Context.getTargetInfo().getTriple().isWindowsGNUEnvironment()) {
++      Context.getTargetInfo().getTriple().isOSCygMing()) {
+     // Check for dllexport class template instantiation definitions in MinGW
+     // mode, if a previous declaration of the instantiation was seen.
+     for (const ParsedAttr &AL : Attr) {
+@@ -9779,7 +9779,7 @@
+     // In MinGW mode, export the template instantiation if the declaration
+     // was marked dllexport.
+     if (PrevDecl_TSK == TSK_ExplicitInstantiationDeclaration &&
+-        Context.getTargetInfo().getTriple().isWindowsGNUEnvironment() &&
++        Context.getTargetInfo().getTriple().isOSCygMing() &&
+         PrevDecl->hasAttr<DLLExportAttr>()) {
+       dllExportImportClassTemplateSpecialization(*this, Def);
+     }
