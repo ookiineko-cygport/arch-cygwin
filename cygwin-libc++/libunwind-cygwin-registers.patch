@@ -1,0 +1,126 @@
+--- origsrc/libunwind-9.0.1.src/src/Registers.hpp	2019-12-11 14:15:30.000000000 -0500
++++ src/libunwind-9.0.1.src/src/Registers.hpp	2020-05-03 17:40:13.005319900 -0400
+@@ -305,12 +305,12 @@ private:
+     uint64_t __cs;
+     uint64_t __fs;
+     uint64_t __gs;
+-#if defined(_WIN64)
++#if defined(_WIN64) || defined(__CYGWIN__)
+     uint64_t __padding; // 16-byte align
+ #endif
+   };
+   GPRs _registers;
+-#if defined(_WIN64)
++#if defined(_WIN64) || defined(__CYGWIN__)
+   v128 _xmm[16];
+ #endif
+ };
+@@ -523,7 +523,7 @@ inline void Registers_x86_64::setFloatRe
+ }
+ 
+ inline bool Registers_x86_64::validVectorRegister(int regNum) const {
+-#if defined(_WIN64)
++#if defined(_WIN64) || defined(__CYGWIN__)
+   if (regNum < UNW_X86_64_XMM0)
+     return false;
+   if (regNum > UNW_X86_64_XMM15)
+@@ -536,7 +536,7 @@ inline bool Registers_x86_64::validVecto
+ }
+ 
+ inline v128 Registers_x86_64::getVectorRegister(int regNum) const {
+-#if defined(_WIN64)
++#if defined(_WIN64) || defined(__CYGWIN__)
+   assert(validVectorRegister(regNum));
+   return _xmm[regNum - UNW_X86_64_XMM0];
+ #else
+@@ -546,7 +546,7 @@ inline v128 Registers_x86_64::getVectorR
+ }
+ 
+ inline void Registers_x86_64::setVectorRegister(int regNum, v128 value) {
+-#if defined(_WIN64)
++#if defined(_WIN64) || defined(__CYGWIN__)
+   assert(validVectorRegister(regNum));
+   _xmm[regNum - UNW_X86_64_XMM0] = value;
+ #else
+--- origsrc/libunwind-9.0.1.src/src/UnwindRegistersRestore.S	2019-12-11 14:15:30.000000000 -0500
++++ src/libunwind-9.0.1.src/src/UnwindRegistersRestore.S	2020-05-03 17:40:37.645944900 -0400
+@@ -64,7 +64,7 @@ DEFINE_LIBUNWIND_FUNCTION(_ZN9libunwind1
+ #
+ # void libunwind::Registers_x86_64::jumpto()
+ #
+-#if defined(_WIN64)
++#if defined(_WIN64) || defined(__CYGWIN__)
+ # On entry, thread_state pointer is in rcx; move it into rdi
+ # to share restore code below. Since this routine restores and
+ # overwrites all registers, we can use the same registers for
+@@ -104,7 +104,7 @@ DEFINE_LIBUNWIND_FUNCTION(_ZN9libunwind1
+   # skip fs
+   # skip gs
+ 
+-#if defined(_WIN64)
++#if defined(_WIN64) || defined(__CYGWIN__)
+   movdqu 176(%rdi),%xmm0
+   movdqu 192(%rdi),%xmm1
+   movdqu 208(%rdi),%xmm2
+--- origsrc/libunwind-9.0.1.src/src/UnwindRegistersSave.S	2019-12-11 14:15:30.000000000 -0500
++++ src/libunwind-9.0.1.src/src/UnwindRegistersSave.S	2020-05-03 17:40:52.817756400 -0400
+@@ -62,7 +62,7 @@ DEFINE_LIBUNWIND_FUNCTION(__unw_getconte
+ #  thread_state pointer is in rdi
+ #
+ DEFINE_LIBUNWIND_FUNCTION(__unw_getcontext)
+-#if defined(_WIN64)
++#if defined(_WIN64) || defined(__CYGWIN__)
+ #define PTR %rcx
+ #define TMP %rdx
+ #else
+@@ -94,7 +94,7 @@ DEFINE_LIBUNWIND_FUNCTION(__unw_getconte
+   # skip fs
+   # skip gs
+ 
+-#if defined(_WIN64)
++#if defined(_WIN64) || defined(__CYGWIN__)
+   movdqu %xmm0,176(PTR)
+   movdqu %xmm1,192(PTR)
+   movdqu %xmm2,208(PTR)
+--- origsrc/libunwind-9.0.1.src/src/assembly.h	2019-12-11 14:15:30.000000000 -0500
++++ src/libunwind-9.0.1.src/src/assembly.h	2020-05-03 17:39:47.739807700 -0400
+@@ -86,7 +86,7 @@
+ #define NO_EXEC_STACK_DIRECTIVE
+ #endif
+ 
+-#elif defined(_WIN32)
++#elif defined(_WIN32) || defined(__CYGWIN__)
+ 
+ #define SYMBOL_IS_FUNC(name)                                                   \
+   .def name SEPARATOR                                                          \
+@@ -104,7 +104,7 @@
+ #endif
+ #define HIDDEN_SYMBOL(name)
+ 
+-#if defined(__MINGW32__)
++#if defined(__MINGW32__) || defined(__CYGWIN__)
+ #define WEAK_ALIAS(name, aliasname)                                            \
+   .globl SYMBOL_NAME(aliasname) SEPARATOR                                      \
+   EXPORT_SYMBOL(aliasname) SEPARATOR                                           \
+--- origsrc/libunwind-9.0.1.src/src/config.h	2020-05-03 17:37:46.005308600 -0400
++++ src/libunwind-9.0.1.src/src/config.h	2020-05-05 04:12:48.036482500 -0400
+@@ -76,17 +76,15 @@
+ #define _LIBUNWIND_WEAK_ALIAS(name, aliasname)                                 \
+   extern "C" _LIBUNWIND_EXPORT __typeof(name) aliasname                        \
+       __attribute__((weak, alias(#name)));
+-#elif defined(_WIN32)
+-#if defined(__MINGW32__)
++#elif defined(__MINGW32__) || defined(__CYGWIN__)
+ #define _LIBUNWIND_WEAK_ALIAS(name, aliasname)                                 \
+   extern "C" _LIBUNWIND_EXPORT __typeof(name) aliasname                        \
+       __attribute__((alias(#name)));
+-#else
++#elif defined(_WIN32)
+ #define _LIBUNWIND_WEAK_ALIAS(name, aliasname)                                 \
+   __pragma(comment(linker, "/alternatename:" SYMBOL_NAME(aliasname) "="        \
+                                              SYMBOL_NAME(name)))               \
+   extern "C" _LIBUNWIND_EXPORT __typeof(name) aliasname;
+-#endif
+ #else
+ #error Unsupported target
+ #endif

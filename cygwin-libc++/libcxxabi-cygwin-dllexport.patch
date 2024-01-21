@@ -1,0 +1,54 @@
+--- origsrc/libcxxabi-5.0.1.src/CMakeLists.txt	2017-07-19 09:04:19.000000000 -0500
++++ src/libcxxabi-5.0.1.src/CMakeLists.txt	2018-01-02 22:00:45.689845500 -0600
+@@ -137,7 +137,7 @@
+     "Specify path to libc++ includes.")
+ 
+ set(LIBCXXABI_HERMETIC_STATIC_LIBRARY_DEFAULT OFF)
+-if (WIN32)
++if (WIN32 OR CYGWIN)
+   set(LIBCXXABI_HERMETIC_STATIC_LIBRARY_DEFAULT ON)
+ endif()
+ option(LIBCXXABI_HERMETIC_STATIC_LIBRARY
+@@ -281,6 +281,11 @@ endif()
+ # libcxxabi needs to, for various reasons, include the libcpp headers as if
+ # it is being built as part of libcxx.
+ add_definitions(-D_LIBCPP_BUILDING_LIBRARY)
++
++if (WIN32 OR CYGWIN)
++  # do not mark references to __cxa_* as dllimport
++  list(APPEND LIBCXXABI_COMPILE_FLAGS -Xclang -flto-visibility-public-std)
++endif()
+ 
+ add_compile_flags_if_supported(-Werror=return-type)
+ 
+--- origsrc/libcxxabi-5.0.1.src/include/__cxxabi_config.h	2017-03-01 05:42:01.000000000 -0600
++++ src/libcxxabi-5.0.1.src/include/__cxxabi_config.h	2018-01-02 20:07:41.321782200 -0600
+@@ -19,7 +19,7 @@
+ #define __has_attribute(_attribute_) 0
+ #endif
+ 
+-#if defined(_WIN32)
++#if defined(_WIN32) || defined(__CYGWIN__)
+  #if defined(_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS)
+   #define _LIBCXXABI_HIDDEN
+   #define _LIBCXXABI_DATA_VIS
+@@ -66,7 +66,7 @@
+  #endif
+ #endif
+ 
+-#if defined(_LIBCXXABI_COMPILER_MSVC)
++#if defined(_LIBCXXABI_COMPILER_MSVC) || defined(__CYGWIN__)
+ #define _LIBCXXABI_WEAK
+ #else
+ #define _LIBCXXABI_WEAK __attribute__((__weak__))
+--- origsrc/libcxxabi-5.0.1.src/include/cxxabi.h	2017-03-01 05:42:01.000000000 -0600
++++ src/libcxxabi-5.0.1.src/include/cxxabi.h	2018-01-02 20:07:41.337412400 -0600
+@@ -26,7 +26,7 @@
+ #ifdef __cplusplus
+ 
+ namespace std {
+-#if defined(_WIN32)
++#if defined(_WIN32) || defined(__CYGWIN__)
+ class _LIBCXXABI_TYPE_VIS type_info; // forward declaration
+ #else
+ class type_info; // forward declaration

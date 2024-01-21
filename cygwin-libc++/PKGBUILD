@@ -1,0 +1,186 @@
+pkgbase=cygwin-libc++
+pkgname=(cygwin-libc++ cygwin-libc++abi cygwin-llvm-libunwind)
+pkgver=15.0.7
+pkgrel=1
+arch=('any')
+url="https://github.com/llvm/llvm-project/tree/main/libunwind"
+license=('custom:Apache 2.0 with LLVM Exception')
+groups=('cygwin-toolchain')
+depends=('cygwin-compiler-rt')
+makedepends=('cygwin-xclang' 'cygwin-cmake' 'ninja')
+options=('!strip' 'staticlibs' '!buildflags')
+source=("https://github.com/llvm/llvm-project/releases/download/llvmorg-${pkgver}/libcxx-${pkgver}.src.tar.xz"
+        "https://github.com/llvm/llvm-project/releases/download/llvmorg-${pkgver}/libcxxabi-${pkgver}.src.tar.xz"
+        "https://github.com/llvm/llvm-project/releases/download/llvmorg-${pkgver}/libunwind-${pkgver}.src.tar.xz"
+        "https://github.com/llvm/llvm-project/releases/download/llvmorg-${pkgver}/cmake-${pkgver}.src.tar.xz"
+        "https://raw.githubusercontent.com/llvm/llvm-project/llvmorg-${pkgver}/runtimes/CMakeLists.txt"
+        "https://raw.githubusercontent.com/llvm/llvm-project/llvmorg-${pkgver}/runtimes/Components.cmake.in"
+        libcxx-cygming-dllexport.patch
+        libcxx-cygwin-config.patch
+        libcxx-cygwin-inline.patch
+        libcxx-cygwin-nodefaultlibs.patch
+        libcxx-cygwin-weak.patch
+        libcxx-newlib-regex_word.patch
+        libcxx-cygwin-visibility.patch
+        libcxx-newlib-ctype-cast.patch
+        libcxx-cygwin-constinit.patch
+        libcxxabi-cygwin-dllexport.patch
+        libcxxabi-cygwin-atexit.patch
+        libcxxabi-cygwin-nodefaultlibs.patch
+        libunwind-cygwin-nodefaultlibs.patch
+        libunwind-cygwin-registers.patch
+        libunwind-cygwin-seh.patch
+        libunwind-cygwin-alignment.patch)
+sha256sums=('8d4eaff1cb6e41439fbf3ededb46998a0a3564d66dd289f661bdd459c9277c11'
+            '9b42f3951d845232e4cd58a0a9841838292dac138af19d4f8d0c08bd41004f43'
+            '406d199ae3a16add84017f40458a5e7c31f9412937fcb518715af0a0eeafbc0c'
+            '8986f29b634fdaa9862eedda78513969fe9788301c9f2d938f4c10a3e7a3e7ea'
+            'a1c9ef5ee90191b64524528703de8000ee66c6f0a5bb7fe02f760e3073d32fde'
+            'bc0974b6555874d3c24295fe8b99b25aea8086158ee4ab87e9a8709191cc7824'
+            '0941dd6bc8a1077e010240a12b0b44303b95c2d5014a45ed5fa03ec8af4b0b19'
+            'a8f146fb95c8d7471e8dad8f8acee42dafc34920a9225f94e4d0f8ae774d7c84'
+            '35fbcc263acf5d317194385ea1d6c634e526fff84568645c459dae8ff96a5db6'
+            '4584ce9f5fc1a2f8d6cb15ebc6d3e739dcba3b64612c16c493d15acf45f16e94'
+            'a74e9a2646006b5f56877552bb89445fe38615e7d2e6f1cbadaa49129dbd7e7f'
+            '354485447b8bdc6ef2ea23aaa047840b139694cb429335919887207a4fc7a6b6'
+            'a5ceb4e81159e70f59c382333b3e8dfa42c2567f4df586fc1f308fb76fe9c0d4'
+            'b24a73735ca29dbd6b32c81dc847e5200d59543099ed19d294f74a8cc3db8369'
+            'ff976c786431e37c933921afb11178bf70d51211cf8b409457af307c718731d1'
+            '8eaba4aaa1a010bed26d7c6a3811a36636661fed276f84089415ede3f17937f9'
+            '210aad90efb20870f19ad2c9d8999e027e0a63b97b09a9f8dd5e409a484cabf2'
+            '0d327a10827e7e070f88748b41396f71f25f479322bad752fb99aad289ec79ec'
+            '7c71d87662b487dd70104bbbd57e908118b24ba4d0336534341efefaefd9042b'
+            'f44ed27853a7fe575e92dcc8b34ccda0f8abef436541dff170109ccee2b70e19'
+            'd6300638dc6ebb74c510f4babf2caaffb5a7ec837b289d9db1f8fac40ee85e62'
+            'f9a8ee0918efee58f32ef651968539d1067424b6efe179a05d7721ee245a3da1')
+
+_targets="x86_64-pc-cygwin"
+
+prepare() {
+  ln -sf libcxx-${pkgver}.src libcxx
+  ln -sf libcxxabi-${pkgver}.src libcxxabi
+  ln -sf libunwind-${pkgver}.src libunwind
+  ln -sf cmake-${pkgver}.src cmake
+
+  pushd libcxx
+  patch -p2 -i ../libcxx-cygming-dllexport.patch
+  patch -p2 -i ../libcxx-cygwin-config.patch
+  patch -p2 -i ../libcxx-cygwin-inline.patch
+  patch -p2 -i ../libcxx-cygwin-nodefaultlibs.patch
+  patch -p2 -i ../libcxx-cygwin-weak.patch
+  patch -p2 -i ../libcxx-newlib-regex_word.patch
+  patch -p2 -i ../libcxx-cygwin-visibility.patch
+  patch -p2 -i ../libcxx-newlib-ctype-cast.patch
+  patch -p2 -i ../libcxx-cygwin-constinit.patch
+  popd
+
+  pushd libcxxabi
+  patch -p2 -i ../libcxxabi-cygwin-dllexport.patch
+  patch -p2 -i ../libcxxabi-cygwin-atexit.patch
+  patch -p2 -i ../libcxxabi-cygwin-nodefaultlibs.patch
+  popd
+
+  pushd libunwind
+  patch -p2 -i ../libunwind-cygwin-nodefaultlibs.patch
+  patch -p2 -i ../libunwind-cygwin-registers.patch
+  patch -p2 -i ../libunwind-cygwin-seh.patch
+  patch -p2 -i ../libunwind-cygwin-alignment.patch
+  popd
+
+  rm -rf runtimes && mkdir -p runtimes
+  mv CMakeLists.txt Components.cmake.in runtimes/
+
+  ln -sf "$(/opt/cygwin-llvm/bin/llvm-config --src-root)" llvm
+}
+
+build() {
+  export LDFLAGS+=" -Wl,--export-all-symbols"
+
+  local common_config=(-DCMAKE_BUILD_TYPE=Release
+                       -DCMAKE_SKIP_RPATH=ON
+                       -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind"
+                       -DLIBCXX_ENABLE_ABI_LINKER_SCRIPT=OFF
+                       -DLIBCXX_HAS_PTHREAD_API=ON
+                       -DLIBCXX_USE_COMPILER_RT=ON
+                       -DLIBCXX_INCLUDE_BENCHMARKS=OFF
+                       -DLIBCXXABI_USE_LLVM_UNWINDER=ON
+                       -DLIBCXXABI_USE_COMPILER_RT=ON
+                       -DLIBUNWIND_USE_COMPILER_RT=ON)
+
+  cd runtimes
+  for _target in ${_targets}; do
+    export CYGWIN_CC=${_target}-clang CYGWIN_CXX=${_target}-clang++
+    mkdir -p "$srcdir"/{static,shared}-${_target}
+
+    echo "Building static libs for ${_target}"
+
+    ${_target}-cmake -B "$srcdir"/static-${_target} -G Ninja \
+                     -DCMAKE_INSTALL_PREFIX=/usr/${_target} \
+                     "${common_config[@]}" \
+                     -DLIBCXX_ENABLE_SHARED=OFF \
+                     -DLIBCXXABI_ENABLE_SHARED=OFF \
+                     -DLIBUNWIND_ENABLE_SHARED=OFF
+    ninja -C "$srcdir"/static-${_target} unwind cxxabi cxx cxx_experimental
+
+    echo "Building shared libs for ${_target}"
+
+    ${_target}-cmake -B "$srcdir"/shared-${_target} -G Ninja \
+                     -DCMAKE_INSTALL_PREFIX=/usr/${_target} \
+                     "${common_config[@]}" \
+                     -DLIBCXX_ENABLE_STATIC=OFF \
+                     -DLIBCXXABI_ENABLE_STATIC=OFF \
+                     -DLIBUNWIND_ENABLE_STATIC=OFF
+    ninja -C "$srcdir"/shared-${_target} unwind cxxabi cxx cxx_experimental
+  done
+}
+
+# Do not remove the space before the () or commitpkg will
+# accidentally to run this function on the system (!!!)
+package_cygwin-libc++ () {
+  pkgdesc='LLVM C++ standard library. (Cygwin) (experimental)'
+  depends=('cygwin-gcc' "cygwin-libc++abi=${pkgver}-${pkgrel}")
+
+  for _target in ${_targets}; do
+    echo "Installing static libc++ for ${_target}"
+    DESTDIR="$pkgdir" ninja -C "$srcdir"/static-${_target} install-cxx
+
+    echo "Installing shared libc++ for ${_target}"
+    DESTDIR="$pkgdir" ninja -C "$srcdir"/shared-${_target} install-cxx
+  done
+
+  cd libcxx
+  install -Dm0644 CREDITS.TXT "$pkgdir"/usr/share/licenses/${pkgname}/CREDITS
+  install -Dm0644 LICENSE.TXT "$pkgdir"/usr/share/licenses/${pkgname}/LICENSE
+}
+
+package_cygwin-libc++abi() {
+  pkgdesc='Low level support for the LLVM C++ standard library. (Cygwin) (experimental)'
+  depends=("cygwin-llvm-libunwind=${pkgver}-${pkgrel}")
+
+  for _target in ${_targets}; do
+    echo "Installing static libc++abi for ${_target}"
+    DESTDIR="$pkgdir" ninja -C "$srcdir"/static-${_target} install-cxxabi
+
+    echo "Installing shared libc++abi for ${_target}"
+    DESTDIR="$pkgdir" ninja -C "$srcdir"/shared-${_target} install-cxxabi
+  done
+
+  cd libcxxabi
+  install -Dm0644 CREDITS.TXT "$pkgdir"/usr/share/licenses/${pkgname}/CREDITS
+  install -Dm0644 LICENSE.TXT "$pkgdir"/usr/share/licenses/${pkgname}/LICENSE
+}
+
+package_cygwin-llvm-libunwind() {
+  pkgdesc='LLVM'\''s libunwind library (Cygwin) (experimental)'
+
+  for _target in ${_targets}; do
+    echo "Installing static libunwind for ${_target}"
+    DESTDIR="$pkgdir" ninja -C "$srcdir"/static-${_target} install-unwind
+
+    echo "Installing shared libunwind for ${_target}"
+    DESTDIR="$pkgdir" ninja -C "$srcdir"/shared-${_target} install-unwind
+  done
+
+  cd libunwind
+  install -Dm0644 LICENSE.TXT "$pkgdir"/usr/share/licenses/${pkgname}/LICENSE
+}

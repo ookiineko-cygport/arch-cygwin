@@ -1,0 +1,104 @@
+--- origsrc/libcxx-15.0.7.src/include/__mutex_base	2023-01-12 15:12:30.000000000 +0800
++++ src/libcxx-15.0.7.src/include/__mutex_base	2024-01-16 15:40:53.568340600 +0800
+@@ -497,7 +497,11 @@
+         __ts.tv_sec = __ts_sec_max;
+         __ts.tv_nsec = giga::num - 1;
+     }
++#ifdef __CYGWIN__
++    int __ec = pthread_cond_clockwait((pthread_cond_t *)(&__cv_), __lk.mutex()->native_handle(), CLOCK_MONOTONIC, &__ts);
++#else
+     int __ec = pthread_cond_clockwait(&__cv_, __lk.mutex()->native_handle(), CLOCK_MONOTONIC, &__ts);
++#endif
+     if (__ec != 0 && __ec != ETIMEDOUT)
+         __throw_system_error(__ec, "condition_variable timed_wait failed");
+ }
+--- origsrc/libcxx-15.0.7.src/include/__threading_support	2023-01-12 15:12:30.000000000 +0800
++++ src/libcxx-15.0.7.src/include/__threading_support	2024-01-16 15:40:17.533425900 +0800
+@@ -61,14 +61,24 @@
+ 
+ #if defined(_LIBCPP_HAS_THREAD_API_PTHREAD)
+ // Mutex
++#ifdef __CYGWIN__
++typedef intptr_t __libcpp_mutex_t;
++#define _LIBCPP_MUTEX_INITIALIZER ((std::__libcpp_mutex_t)19)
++#else
+ typedef pthread_mutex_t __libcpp_mutex_t;
+ #define _LIBCPP_MUTEX_INITIALIZER PTHREAD_MUTEX_INITIALIZER
++#endif
+ 
+ typedef pthread_mutex_t __libcpp_recursive_mutex_t;
+ 
+ // Condition Variable
++#ifdef __CYGWIN__
++typedef intptr_t __libcpp_condvar_t;
++#define _LIBCPP_CONDVAR_INITIALIZER ((std::__libcpp_condvar_t)21)
++#else
+ typedef pthread_cond_t __libcpp_condvar_t;
+ #define _LIBCPP_CONDVAR_INITIALIZER PTHREAD_COND_INITIALIZER
++#endif
+ 
+ // Execute once
+ typedef pthread_once_t __libcpp_exec_once_flag;
+@@ -299,6 +309,54 @@
+   return pthread_mutex_destroy(__m);
+ }
+ 
++#ifdef __CYGWIN__
++int __libcpp_mutex_lock(__libcpp_mutex_t *__m)
++{
++  return pthread_mutex_lock((pthread_mutex_t *)__m);
++}
++
++bool __libcpp_mutex_trylock(__libcpp_mutex_t *__m)
++{
++  return pthread_mutex_trylock((pthread_mutex_t *)__m) == 0;
++}
++
++int __libcpp_mutex_unlock(__libcpp_mutex_t *__m)
++{
++  return pthread_mutex_unlock((pthread_mutex_t *)__m);
++}
++
++int __libcpp_mutex_destroy(__libcpp_mutex_t *__m)
++{
++  return pthread_mutex_destroy((pthread_mutex_t *)__m);
++}
++
++// Condition Variable
++int __libcpp_condvar_signal(__libcpp_condvar_t *__cv)
++{
++  return pthread_cond_signal((pthread_cond_t *)__cv);
++}
++
++int __libcpp_condvar_broadcast(__libcpp_condvar_t *__cv)
++{
++  return pthread_cond_broadcast((pthread_cond_t *)__cv);
++}
++
++int __libcpp_condvar_wait(__libcpp_condvar_t *__cv, __libcpp_mutex_t *__m)
++{
++  return pthread_cond_wait((pthread_cond_t *)__cv, (pthread_mutex_t *)__m);
++}
++
++int __libcpp_condvar_timedwait(__libcpp_condvar_t *__cv, __libcpp_mutex_t *__m,
++                               __libcpp_timespec_t *__ts)
++{
++  return pthread_cond_timedwait((pthread_cond_t *)__cv, (pthread_mutex_t *)__m, __ts);
++}
++
++int __libcpp_condvar_destroy(__libcpp_condvar_t *__cv)
++{
++  return pthread_cond_destroy((pthread_cond_t *)__cv);
++}
++#else
+ int __libcpp_mutex_lock(__libcpp_mutex_t *__m)
+ {
+   return pthread_mutex_lock(__m);
+@@ -345,6 +403,7 @@
+ {
+   return pthread_cond_destroy(__cv);
+ }
++#endif
+ 
+ // Execute once
+ int __libcpp_execute_once(__libcpp_exec_once_flag *__flag,

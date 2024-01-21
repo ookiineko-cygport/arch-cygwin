@@ -1,0 +1,22 @@
+From https://github.com/belmeopmenieuwesim/llvm-project/commit/bb68ca4a4e55758cb08495807cff7fd19463c0ae
+
+diff --git a/libcxx/src/regex.cpp b/libcxx/src/regex.cpp
+index e53d3241869001..a8d43757292582 100644
+--- a/libcxx/src/regex.cpp
++++ b/libcxx/src/regex.cpp
+@@ -321,13 +321,13 @@ const classnames ClassNames[] =
+ {
+     {"alnum",  ctype_base::alnum},
+     {"alpha",  ctype_base::alpha},
+-    {"blank",  ctype_base::blank},
++    {"blank",  static_cast<regex_traits<char>::char_class_type>(ctype_base::blank)},
+     {"cntrl",  ctype_base::cntrl},
+     {"d",      ctype_base::digit},
+     {"digit",  ctype_base::digit},
+     {"graph",  ctype_base::graph},
+     {"lower",  ctype_base::lower},
+-    {"print",  ctype_base::print},
++    {"print",  static_cast<regex_traits<char>::char_class_type>(ctype_base::print)},
+     {"punct",  ctype_base::punct},
+     {"s",      ctype_base::space},
+     {"space",  ctype_base::space},

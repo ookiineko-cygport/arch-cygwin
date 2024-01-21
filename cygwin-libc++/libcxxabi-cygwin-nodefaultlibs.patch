@@ -1,0 +1,31 @@
+--- origsrc/libcxxabi-5.0.1.src/cmake/config-ix.cmake	2017-06-11 18:59:26.000000000 -0500
++++ src/libcxxabi-5.0.1.src/cmake/config-ix.cmake	2018-01-02 20:07:41.321782200 -0600
+@@ -39,6 +39,17 @@ if (LIBCXXABI_HAS_NODEFAULTLIBS_FLAG)
+                         shell32 user32 kernel32 mingw32 ${MINGW_RUNTIME}
+                         moldname mingwex msvcrt)
+     list(APPEND CMAKE_REQUIRED_LIBRARIES ${MINGW_LIBRARIES})
++  elseif (CYGWIN)
++    # Cygwin requires quite a few "C" runtime libraries in order for basic
++    # programs to link successfully with -nodefaultlibs.
++    if (LIBCXXABI_USE_COMPILER_RT)
++      set(CYGWIN_RUNTIME ${LIBCXXABI_BUILTINS_LIBRARY})
++    else ()
++      set(CYGWIN_RUNTIME gcc_s gcc)
++    endif()
++    set(CYGWIN_LIBRARIES ${CYGWIN_RUNTIME} cygwin advapi32
++                        shell32 user32 kernel32 ${CYGWIN_RUNTIME})
++    list(APPEND CMAKE_REQUIRED_LIBRARIES ${CYGWIN_LIBRARIES})
+   endif()
+   if (CMAKE_C_FLAGS MATCHES -fsanitize OR CMAKE_CXX_FLAGS MATCHES -fsanitize)
+     set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -fno-sanitize=all")
+--- origsrc/libcxxabi-5.0.1.src/src/CMakeLists.txt	2017-07-10 20:42:26.000000000 -0500
++++ src/libcxxabi-5.0.1.src/src/CMakeLists.txt	2018-01-02 20:07:41.337412400 -0600
+@@ -74,6 +74,8 @@ if (LIBCXXABI_USE_LLVM_UNWINDER)
+ if (MINGW)
+   # MINGW_LIBRARIES is defined in config-ix.cmake
+   list(APPEND LIBCXXABI_LIBRARIES ${MINGW_LIBRARIES})
++elseif (CYGWIN)
++  list(APPEND LIBCXXABI_LIBRARIES ${CYGWIN_LIBRARIES})
+ endif()
+ 
+ # Setup flags.

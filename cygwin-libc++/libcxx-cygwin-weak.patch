@@ -1,0 +1,15 @@
+--- origsrc/libcxx-11.0.0.src/include/__config	2023-07-26 13:57:36.616712600 +0800
++++ src/libcxx-11.0.0.src/include/__config	2023-07-26 14:00:21.497014200 +0800
+@@ -1122,8 +1122,12 @@
+ #  endif
+ 
+ #  ifndef _LIBCPP_WEAK
++#    if defined(__CYGWIN__)
++#      define _LIBCPP_WEAK
++#    else
+ #    define _LIBCPP_WEAK __attribute__((__weak__))
+ #  endif
++#  endif
+ 
+ // Thread API
+ // clang-format off

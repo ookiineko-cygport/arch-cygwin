@@ -1,0 +1,31 @@
+--- origsrc/libunwind-8.0.1.src/cmake/config-ix.cmake	2018-10-08 14:35:00.000000000 -0400
++++ src/libunwind-8.0.1.src/cmake/config-ix.cmake	2019-07-22 00:55:35.340283100 -0400
+@@ -34,6 +34,18 @@ if (LIBUNWIND_HAS_NODEFAULTLIBS_FLAG)
+       list(APPEND CMAKE_REQUIRED_LIBRARIES gcc)
+     endif ()
+   endif ()
++  if (CYGWIN)
++    # Cygwin requires quite a few "C" runtime libraries in order for basic
++    # programs to link successfully with -nodefaultlibs.
++    if (LIBUNWIND_USE_COMPILER_RT)
++      set(CYGWIN_RUNTIME ${LIBUNWIND_BUILTINS_LIBRARY})
++    else ()
++      set(CYGWIN_RUNTIME gcc_s gcc)
++    endif()
++    set(CYGWIN_LIBRARIES ${MINGW_RUNTIME} cygwin advapi32 psapi
++                        shell32 user32 kernel32 ${CYGWIN_RUNTIME})
++    list(APPEND CMAKE_REQUIRED_LIBRARIES ${CYGWIN_LIBRARIES})
++  endif()
+   if (MINGW)
+     # Mingw64 requires quite a few "C" runtime libraries in order for basic
+     # programs to link successfully with -nodefaultlibs.
+--- origsrc/libunwind-10.0.1.src/src/CMakeLists.txt	2023-07-23 20:04:27.429818300 +0800
++++ src/libunwind-10.0.1.src/src/CMakeLists.txt	2023-07-23 20:07:57.976549100 +0800
+@@ -78,6 +78,7 @@
+ add_link_flags_if_supported(-nodefaultlibs)
+
+ # MINGW_LIBRARIES is defined in config-ix.cmake
++add_library_flags_if(CYGWIN "${CYGWIN_LIBRARIES}")
+ add_library_flags_if(MINGW "${MINGW_LIBRARIES}")
+
+ if (LIBUNWIND_ENABLE_SHARED AND

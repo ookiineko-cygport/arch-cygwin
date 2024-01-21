@@ -1,0 +1,11 @@
+--- origsrc/libunwind-12.0.1.src/include/libunwind.h	2021-06-29 00:23:38.000000000 +0800
++++ src/libunwind-12.0.1.src/include/libunwind.h	2023-07-27 10:12:31.848978000 +0800
+@@ -43,7 +43,7 @@
+   #define LIBUNWIND_AVAIL
+ #endif
+ 
+-#if defined(_WIN32) && defined(__SEH__)
++#if (defined(_WIN32) || defined(__CYGWIN__)) && defined(__SEH__)
+   #define LIBUNWIND_CURSOR_ALIGNMENT_ATTR __attribute__((__aligned__(16)))
+ #else
+   #define LIBUNWIND_CURSOR_ALIGNMENT_ATTR

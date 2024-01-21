@@ -1,0 +1,13 @@
+--- origsrc/libcxx-5.0.1.src/CMakeLists.txt	2017-07-19 09:04:38.000000000 -0500
++++ src/libcxx-5.0.1.src/CMakeLists.txt	2018-01-03 17:06:50.464926300 -0600
+@@ -610,7 +612,9 @@ config_define_if(LIBCXX_HAS_MUSL_LIBC _L
+ # By default libc++ on Windows expects to use a shared library, which requires
+ # the headers to use DLL import/export semantics. However when building a
+ # static library only we modify the headers to disable DLL import/export.
+-if (DEFINED WIN32 AND LIBCXX_ENABLE_STATIC AND NOT LIBCXX_ENABLE_SHARED)
++if ((WIN32 OR CYGWIN) AND LIBCXX_ENABLE_STATIC AND NOT LIBCXX_ENABLE_SHARED)
++  list(APPEND LIBCXX_COMPILE_FLAGS -Xclang -flto-visibility-public-std)
++  add_definitions(-D_LIBCXXABI_DISABLE_VISIBILITY_ANNOTATIONS)
+   message(STATUS "Generating custom __config for non-DLL Windows build")
+   config_define(ON _LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS)
+ endif()

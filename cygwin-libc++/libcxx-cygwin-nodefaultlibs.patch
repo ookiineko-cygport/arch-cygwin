@@ -1,0 +1,31 @@
+--- origsrc/libcxx-9.0.1.src/cmake/config-ix.cmake	2019-12-11 14:15:30.000000000 -0500
++++ src/libcxx-9.0.1.src/cmake/config-ix.cmake	2020-05-05 10:28:56.653826700 -0400
+@@ -52,6 +52,17 @@ if (LIBCXX_SUPPORTS_NODEFAULTLIBS_FLAG)
+                         shell32 user32 kernel32 mingw32 ${MINGW_RUNTIME}
+                         moldname mingwex msvcrt)
+     list(APPEND CMAKE_REQUIRED_LIBRARIES ${MINGW_LIBRARIES})
++  elseif (CYGWIN)
++    # Cygwin requires quite a few "C" runtime libraries in order for basic
++    # programs to link successfully with -nodefaultlibs.
++    if (LIBCXX_USE_COMPILER_RT)
++      set(CYGWIN_RUNTIME ${LIBCXX_BUILTINS_LIBRARY})
++    else ()
++      set(CYGWIN_RUNTIME gcc_s gcc)
++    endif()
++    set(CYGWIN_LIBRARIES ${CYGWIN_RUNTIME} cygwin advapi32
++                         shell32 user32 kernel32 ${CYGWIN_RUNTIME})
++    list(APPEND CMAKE_REQUIRED_LIBRARIES ${CYGWIN_LIBRARIES})
+   endif()
+   if (CMAKE_C_FLAGS MATCHES -fsanitize OR CMAKE_CXX_FLAGS MATCHES -fsanitize)
+     set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -fno-sanitize=all")
+--- origsrc/libcxx-9.0.1.src/CMakeLists.txt	2019-12-11 14:15:30.000000000 -0500
++++ src/libcxx-9.0.1.src/CMakeLists.txt	2020-05-05 10:29:28.013357300 -0400
+@@ -177,6 +177,8 @@ function(cxx_link_system_libraries targe
+ 
+   if (MINGW)
+     target_link_libraries(${target} PRIVATE "${MINGW_LIBRARIES}")
++  elseif (CYGWIN)
++    target_link_libraries(${target} PRIVATE "${CYGWIN_LIBRARIES}")
+   endif()
+ 
+   if (LIBCXX_TARGETING_MSVC)

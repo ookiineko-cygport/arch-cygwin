@@ -1,0 +1,73 @@
+--- origsrc/libcxx-7.0.1.src/include/__config	2019-05-07 15:19:44.345793400 -0400
++++ src/libcxx-7.0.1.src/include/__config	2019-05-07 15:22:46.033012500 -0400
+@@ -59,7 +59,7 @@
+ #    define _LIBCPP_OBJECT_FORMAT_ELF 1
+ #  elif defined(__MACH__)
+ #    define _LIBCPP_OBJECT_FORMAT_MACHO 1
+-#  elif defined(_WIN32)
++#  elif defined(_WIN32) || defined(__CYGWIN__)
+ #    define _LIBCPP_OBJECT_FORMAT_COFF 1
+ #  elif defined(__wasm__)
+ #    define _LIBCPP_OBJECT_FORMAT_WASM 1
+@@ -253,6 +253,10 @@
+ #    endif // _BYTE_ORDER == _LITTLE_ENDIAN
+ #  endif   // defined(__NetBSD__) || defined(__OpenBSD__)
+ 
++#if defined(__CYGWIN__)
++#  define _LIBCPP_SHORT_WCHAR   1
++#endif
++
+ #  if defined(_WIN32)
+ #    define _LIBCPP_WIN32API
+ #    define _LIBCPP_LITTLE_ENDIAN
+@@ -634,7 +634,7 @@
+ // TODO: We provide a escape hatch with _LIBCPP_NO_ABI_TAG for folks who want to avoid increasing
+ //       the length of symbols with an ABI tag. In practice, we should remove the escape hatch and
+ //       use compression mangling instead, see https://github.com/itanium-cxx-abi/cxx-abi/issues/70.
+-#  ifndef _LIBCPP_NO_ABI_TAG
++#  if !defined(_LIBCPP_NO_ABI_TAG) && !defined(__CYGWIN__)
+ #    define _LIBCPP_HIDE_FROM_ABI                                                                                      \
+       _LIBCPP_HIDDEN _LIBCPP_EXCLUDE_FROM_EXPLICIT_INSTANTIATION                                                       \
+           __attribute__((__abi_tag__(_LIBCPP_TOSTRING(_LIBCPP_VERSIONED_IDENTIFIER))))
+@@ -808,7 +812,11 @@ typedef __char32_t char32_t;
+ #endif
+ 
+ // Just so we can migrate to the new macros gradually.
++#  ifdef _LIBCPP_BUILDING_LIBRARY
++#    define _LIBCPP_INLINE_VISIBILITY
++#  else
+ #  define _LIBCPP_INLINE_VISIBILITY _LIBCPP_HIDE_FROM_ABI
++#  endif
+ 
+ // Inline namespaces are available in Clang/GCC/MSVC regardless of C++ dialect.
+ #  define _LIBCPP_BEGIN_NAMESPACE_STD namespace std { inline namespace _LIBCPP_ABI_NAMESPACE {
+@@ -1113,6 +1121,7 @@ _LIBCPP_FUNC_VIS extern "C" void __sanit
+         defined(__APPLE__) ||                                                                                          \
+         defined(__sun__) ||                                                                                            \
+         defined(__MVS__) ||                                                                                            \
++        defined(__CYGWIN__) ||                                                                                         \
+         defined(_AIX) ||                                                                                               \
+         defined(__EMSCRIPTEN__)
+ // clang-format on
+--- origsrc/libcxx-13.0.1.src/include/locale   	2022-01-21 05:31:59.000000000 +0800
++++ src/libcxx-13.0.1.src/include/locale       	2023-12-14 10:25:48.788758200 +0800
+@@ -206,7 +206,7 @@
+ 
+ #if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+ // Most unix variants have catopen.  These are the specific ones that don't.
+-#  if !defined(__BIONIC__) && !defined(_NEWLIB_VERSION) && !defined(__EMSCRIPTEN__)
++#  if !defined(__BIONIC__) && (!defined(_NEWLIB_VERSION) || defined(__CYGWIN__)) && !defined(__EMSCRIPTEN__)
+ #    define _LIBCPP_HAS_CATOPEN 1
+ #    include <nl_types.h>
+ #  endif
+--- origsrc/libcxx-13.0.1.src/include/fstream  	2022-01-21 05:31:59.000000000 +0800
++++ src/libcxx-13.0.1.src/include/fstream      	2023-12-14 10:28:11.933209700 +0800
+@@ -199,7 +199,7 @@
+ _LIBCPP_PUSH_MACROS
+ #include <__undef_macros>
+ 
+-#if defined(_LIBCPP_MSVCRT) || defined(_NEWLIB_VERSION)
++#if defined(_LIBCPP_MSVCRT) || (defined(_NEWLIB_VERSION) && !defined(__CYGWIN__))
+ #  define _LIBCPP_HAS_NO_OFF_T_FUNCTIONS
+ #endif
+ 

@@ -1,12 +1,13 @@
 pkgname=cygwin-compiler-rt
 pkgver=15.0.7
-pkgrel=1
+pkgrel=2
 pkgdesc="Compiler runtime libraries for clang (Cygwin) (experimental)"
 arch=('any')
 url="https://compiler-rt.llvm.org/"
 license=('custom:Apache 2.0 with LLVM Exception')
 groups=('cygwin-toolchain')
 makedepends=('cygwin-xclang' 'cygwin-cmake' 'ninja')
+optdepends=('cygwin-llvm-libunwind: for linking libunwind')
 options=('!strip' 'staticlibs' '!buildflags')
 source=("https://github.com/llvm/llvm-project/releases/download/llvmorg-${pkgver}/compiler-rt-${pkgver}.src.tar.xz"
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-${pkgver}/cmake-${pkgver}.src.tar.xz"

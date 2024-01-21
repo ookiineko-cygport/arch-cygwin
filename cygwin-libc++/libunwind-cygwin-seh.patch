@@ -1,0 +1,99 @@
+--- origsrc/libunwind-8.0.1.src/include/__libunwind_config.h	2019-01-14 05:15:20.000000000 -0500
++++ src/libunwind-8.0.1.src/include/__libunwind_config.h	2019-07-22 09:18:10.810191100 -0400
+@@ -33,7 +33,7 @@
+ #  define _LIBUNWIND_HIGHEST_DWARF_REGISTER _LIBUNWIND_HIGHEST_DWARF_REGISTER_X86
+ # elif defined(__x86_64__)
+ #  define _LIBUNWIND_TARGET_X86_64 1
+-#  if defined(_WIN64)
++#  if defined(_WIN64) || defined(__CYGWIN__)
+ #    define _LIBUNWIND_CONTEXT_SIZE 54
+ #    ifdef __SEH__
+ #      define _LIBUNWIND_CURSOR_SIZE 204
+--- origsrc/libunwind-8.0.1.src/include/unwind.h	2018-08-30 17:29:00.000000000 -0400
++++ src/libunwind-8.0.1.src/include/unwind.h	2019-07-22 00:55:35.340283100 -0400
+@@ -19,7 +19,7 @@
+ #include <stdint.h>
+ #include <stddef.h>
+ 
+-#if defined(__SEH__) && !defined(__USING_SJLJ_EXCEPTIONS__) && defined(_WIN32)
++#if defined(__SEH__) && !defined(__USING_SJLJ_EXCEPTIONS__) && (defined(_WIN32) || defined(__CYGWIN__))
+ #include <windows.h>
+ #include <ntverp.h>
+ #endif
+@@ -379,11 +379,11 @@ extern void *__deregister_frame_info_bas
+     LIBUNWIND_UNAVAIL;
+ 
+ #if defined(__SEH__) && !defined(__USING_SJLJ_EXCEPTIONS__)
+-#ifndef _WIN32
++#if !defined(_WIN32) && !defined(__CYGWIN__)
+ typedef struct _EXCEPTION_RECORD EXCEPTION_RECORD;
+ typedef struct _CONTEXT CONTEXT;
+ typedef struct _DISPATCHER_CONTEXT DISPATCHER_CONTEXT;
+-#elif !defined(__MINGW32__) && VER_PRODUCTBUILD < 8000
++#elif !defined(__MINGW64_VERSION_MAJOR) && VER_PRODUCTBUILD < 8000
+ typedef struct _DISPATCHER_CONTEXT DISPATCHER_CONTEXT;
+ #endif
+ // This is the common wrapper for GCC-style personality functions with SEH.
+--- origsrc/libunwind-8.0.1.src/src/AddressSpace.hpp	2019-02-06 05:22:11.000000000 -0500
++++ src/libunwind-8.0.1.src/src/AddressSpace.hpp	2019-07-22 09:14:25.166164300 -0400
+@@ -419,7 +419,7 @@ inline bool LocalAddressSpace::findUnwin
+                              (void *)info.arm_section, (void *)info.arm_section_length);
+   if (info.arm_section && info.arm_section_length)
+     return true;
+-#elif defined(_LIBUNWIND_SUPPORT_DWARF_UNWIND) && defined(_WIN32)
++#elif defined(_LIBUNWIND_SUPPORT_DWARF_UNWIND) && (defined(_WIN32) || defined(__CYGWIN__))
+   HMODULE mods[1024];
+   HANDLE process = GetCurrentProcess();
+   DWORD needed;
+@@ -454,7 +454,7 @@ inline bool LocalAddressSpace::findUnwin
+     }
+   }
+   return false;
+-#elif defined(_LIBUNWIND_SUPPORT_SEH_UNWIND) && defined(_WIN32)
++#elif defined(_LIBUNWIND_SUPPORT_SEH_UNWIND) && (defined(_WIN32) || defined(__CYGWIN__))
+   // Don't even bother, since Windows has functions that do all this stuff
+   // for us.
+   return true;
+--- origsrc/libunwind-8.0.1.src/src/UnwindCursor.hpp	2019-01-14 05:15:20.000000000 -0500
++++ src/libunwind-8.0.1.src/src/UnwindCursor.hpp	2019-07-22 09:15:35.258430800 -0400
+@@ -18,7 +18,7 @@
+ #include <stdlib.h>
+ #include <unwind.h>
+ 
+-#ifdef _WIN32
++#if defined(_WIN32) || defined(__CYGWIN__)
+   #include <windows.h>
+   #include <ntverp.h>
+ #endif
+@@ -30,8 +30,8 @@
+ // Provide a definition for the DISPATCHER_CONTEXT struct for old (Win7 and
+ // earlier) SDKs.
+ // MinGW-w64 has always provided this struct.
+-  #if defined(_WIN32) && defined(_LIBUNWIND_TARGET_X86_64) && \
+-      !defined(__MINGW32__) && VER_PRODUCTBUILD < 8000
++  #if (defined(_WIN32) || defined(__CYGWIN__)) && defined(_LIBUNWIND_TARGET_X86_64) && \
++      !defined(__MINGW64_VERSION_MAJOR) && VER_PRODUCTBUILD < 8000
+ struct _DISPATCHER_CONTEXT {
+   ULONG64 ControlPc;
+   ULONG64 ImageBase;
+@@ -453,7 +453,7 @@ public:
+ #endif
+ };
+ 
+-#if defined(_LIBUNWIND_SUPPORT_SEH_UNWIND) && defined(_WIN32)
++#if defined(_LIBUNWIND_SUPPORT_SEH_UNWIND) && (defined(_WIN32) || defined(__CYGWIN__))
+ 
+ /// \c UnwindCursor contains all state (including all register values) during
+ /// an unwind.  This is normally stack-allocated inside a unw_cursor_t.
+--- origsrc/libunwind-8.0.1.src/src/config.h	2018-08-30 17:29:00.000000000 -0400
++++ src/libunwind-8.0.1.src/src/config.h	2019-07-22 00:55:35.355906300 -0400
+@@ -37,7 +37,7 @@
+     #define _LIBUNWIND_SUPPORT_COMPACT_UNWIND
+     #define _LIBUNWIND_SUPPORT_DWARF_UNWIND   1
+   #endif
+-#elif defined(_WIN32)
++#elif defined(_WIN32) || defined(__CYGWIN__)
+   #ifdef __SEH__
+     #define _LIBUNWIND_SUPPORT_SEH_UNWIND 1
+   #else
+
