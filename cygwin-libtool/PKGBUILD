@@ -1,0 +1,62 @@
+# NOTE: requires rebuilt with each new gcc version
+
+pkgname=cygwin-libtool
+pkgver=2.4.7
+pkgrel=1
+pkgdesc="A generic library support script (Cygwin)"
+arch=('any')
+url="https://www.gnu.org/software/libtool"
+license=('GPL')
+groups=('cygwin-toolchain')
+depends=('sh' 'tar' 'cygwin')
+makedepends=('cygwin-configure')
+conflicts=('cygwin-libltdl')
+provides=('cygwin-libltdl')
+options=('!strip' 'staticlibs' '!libtool' '!buildflags')
+source=("https://ftp.gnu.org/gnu/libtool/libtool-${pkgver}.tar.xz"
+        cygming-pass-ld-flags.patch
+        cygming-fix-seems-to-be-moved.patch
+        cygming-pick-up-clang-rt.patch)
+sha256sums=('4f7f217f057ce655ff22559ad221a0fd8ef84ad1fc5fcb6990cecc333aa1635d'
+            '800f929efe2445271cf1c58501969bb9bee87a3114528498e61e389c2960351c'
+            'dc39fbe066958178f96108f07db62b48b9339efddf2c21f800ff8d67110ca393'
+            '06d1a4bf88cc02bcc175b150b843541b8ee4627cc571651548f1f2dbe5ed6d5c')
+
+_targets="x86_64-pc-cygwin"
+
+prepare() {
+  cd "$srcdir"/libtool-${pkgver}
+  patch -p2 -i ../cygming-pass-ld-flags.patch
+  patch -p1 -i ../cygming-fix-seems-to-be-moved.patch
+  patch -p2 -i ../cygming-pick-up-clang-rt.patch
+}
+
+build() {
+  cd "$srcdir"/libtool-${pkgver}
+  for _target in ${_targets}; do
+    echo "Building for ${_target}"
+    mkdir -p build-${_target} && pushd build-${_target}
+    ${_target}-configure \
+    lt_cv_sys_lib_dlsearch_path_spec="/usr/${_target}/lib"
+    make
+    popd
+  done
+}
+
+package() {
+  cd "$srcdir"/libtool-${pkgver}
+  for _target in ${_targets}; do
+    echo "Installing for ${_target}"
+    pushd build-${_target}
+    make DESTDIR="$pkgdir" install
+    ${_target}-strip --strip-unneeded "$pkgdir"/usr/${_target}/bin/*.dll
+    ${_target}-strip -g "$pkgdir"/usr/${_target}/lib/*.a
+
+    # remove unnecessary files
+    rm -rf "$pkgdir"/usr/${_target}/share/man
+
+    # remove dir file
+    rm -rf "$pkgdir"/usr/${_target}/share/info/dir
+    popd
+  done
+}

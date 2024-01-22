@@ -1,0 +1,13 @@
+--- origsrc/libtool-2.4.7/build-aux/ltmain.in
++++ src/libtool-2.4.7/build-aux/ltmain.in
+@@ -5411,6 +5411,9 @@
+       -64|-mips[0-9]|-r[0-9][0-9]*|-xarch=*|-xtarget=*|+DA*|+DD*|-q*|-m*| \
+       -t[45]*|-txscale*|-p|-pg|--coverage|-fprofile-*|-F*|@*|-tp=*|--sysroot=*| \
+       -O*|-g*|-flto*|-fwhopr*|-fuse-linker-plugin|-fstack-protector*|-stdlib=*| \
++      -fopenacc|-fopenmp|-ftree-parallelize-loops=*|-fcilkplus|-fgnu-tm| \
++      -ffast-math|-funsafe-math-optimizations|-fvtable-verify*| \
++      -shared-libgcc|-static-libgcc|-static-libgfortran|-static-libstdc++| \
+       -specs=*|-fsanitize=*|-fuse-ld=*|-Wa,*)
+         func_quote_arg pretty "$arg"
+ 	arg=$func_quote_arg_result
+
