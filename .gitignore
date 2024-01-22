@@ -8,3 +8,4 @@
 # source tarballs
 /**/*.tar
 /**/*.tar.*[zZ]*
+/**/*.t*[zZ2]*

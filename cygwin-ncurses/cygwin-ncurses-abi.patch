@@ -1,0 +1,44 @@
+--- origsrc/configure	2021-10-30 08:46:35.000000000 -0600
++++ src/configure	2021-11-11 13:31:55.397013800 -0700
+@@ -5605,7 +5605,7 @@ test -z "$cf_cv_libtool_version" && unse
+ echo "$as_me: error: Cannot find libtool" >&2;}
+    { (exit 1); exit 1; }; }
+ 	fi
+-	LIB_CREATE='${LIBTOOL} --mode=link ${CC} -rpath ${libdir} ${LIBTOOL_VERSION} `cut -f1 ${top_srcdir}/VERSION` ${LIBTOOL_OPTS} ${LT_UNDEF} $(LIBS) -o'
++	LIB_CREATE='${LIBTOOL} --mode=link ${CC} -rpath ${libdir} ${LIBTOOL_VERSION} ${ABI_VERSION}:0 ${LIBTOOL_OPTS} ${LT_UNDEF} $(LIBS) -o'
+ 	LIB_OBJECT='${OBJECTS:.o=.lo}'
+ 	LIB_SUFFIX=.la
+ 	LIB_CLEAN='${LIBTOOL} --mode=clean'
+@@ -15418,6 +15418,9 @@ case $cf_cv_abi_version in
+ ([789])
+ 	NCURSES_MOUSE_VERSION=3
+ 	;;
++(1[0-9])
++	NCURSES_MOUSE_VERSION=3
++	;;
+ esac
+ 
+ ###   use option --enable-ext-putwin to turn on extended screendumps
+--- origsrc/configure.in	2022-11-05 14:14:56.000000000 -0600
++++ src/configure.in	2022-12-31 18:33:11.828758700 -0700
+@@ -1275,6 +1275,9 @@ case $cf_cv_abi_version in
+ ([[789]])
+ 	NCURSES_MOUSE_VERSION=3
+ 	;;
++(1[[0-9]])
++	NCURSES_MOUSE_VERSION=3
++	;;
+ esac
+ 
+ AC_SUBST(NCURSES_MOUSE_VERSION)
+--- origsrc/mk-1st.awk	2016-12-31 11:04:34.000000000 -0600
++++ src/mk-1st.awk	2021-11-11 13:31:55.397013800 -0700
+@@ -495,7 +495,7 @@ END	{
+ 				printf "\tcd ../lib && $(LIBTOOL_LINK) $(%s) $(%s) \\\n", CC_NAME, CC_FLAG;
+ 				printf "\t\t-o %s $(%s_OBJS:$o=.lo) \\\n", lib_name, OBJS;
+ 				printf "\t\t-rpath $(libdir) \\\n";
+-				printf "\t\t%s $(NCURSES_MAJOR):$(NCURSES_MINOR) $(LT_UNDEF) $(%s) $(LDFLAGS)\n", libtool_version, which_list;
++				printf "\t\t%s $(ABI_VERSION):0 $(LT_UNDEF) $(%s) $(LDFLAGS)\n", libtool_version, which_list;
+ 				if ( make_phony == "yes" ) {
+ 					print  ""
+ 					printf ".PHONY :\tinstall.%s\n", trim_suffix(name);

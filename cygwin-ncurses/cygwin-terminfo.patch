@@ -1,0 +1,19 @@
+--- origsrc/misc/terminfo.src	2024-01-14 11:08:23.000000000 -0700
++++ src/misc/terminfo.src	2024-01-20 21:24:59.782628500 -0700
+@@ -6711,7 +6711,7 @@ rxvt-basic|rxvt terminal base (X Window
+ 	sgr0=\E[0m\017, smir=\E[4h, smkx=\E=, smso=\E[7m,
+ 	smul=\E[4m, use=ansi+csr, use=ansi+idl, use=ansi+local,
+ 	use=xterm+alt47, use=vt100+enq, use=vt100+4bsd,
+-	use=rxvt+pcfkeys, use=vt220+cvis, use=vt220+keypad,
++	use=rxvt+pcfkeys, use=vt220+cvis, use=vt220+keypad, use=xterm+kbs,
+ 
+ # Key Codes from rxvt reference:
+ #
+@@ -8401,6 +8401,7 @@ screen.xterm-r6|screen customized for X1
+ # on Solaris because Sun's curses implementation gets confused.
+ screen.teraterm|disable ncv in teraterm,
+ 	ncv#127,
++	kbs=^H,
+ 	acsc=+\020\,\021-\030.^Y0\333`\004a\261f\370g\361h\260i
+ 	     \316j\331k\277l\332m\300n\305o~p\304q\304r\304s_t\303u
+ 	     \264v\301w\302x\263y\363z\362{\343|\330}\234~\376,
