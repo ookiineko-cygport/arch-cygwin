@@ -1,0 +1,26 @@
+pkgname=cygwin-make
+pkgver=1
+pkgrel=1
+pkgdesc="Make wrapper for Cygwin"
+arch=('any')
+url="http://fedoraproject.org/wiki/MinGW"
+license=('GPL')
+groups=('cygwin-toolchain')
+depends=('cygwin-gcc' 'cygwin-environment')
+source=(cygwin-make.sh)
+md5sums=('SKIP')
+
+_targets="x86_64-pc-cygwin"
+
+build() {
+  for _target in ${_targets}; do
+    sed "s|@TRIPLE@|${_target}|g" cygwin-make.sh > ${_target}-make
+  done
+}
+
+package() {
+  install -d "$pkgdir"/usr/bin
+  for _target in ${_targets}; do
+    install -m 755 ${_target}-make "$pkgdir"/usr/bin/
+  done
+}
