@@ -1,0 +1,68 @@
+pkgname=cygwin-zlib
+pkgver=1.3
+pkgrel=1
+pkgdesc="Compression library implementing the deflate compression method found in gzip and PKZIP (Cygwin)"
+arch=('any')
+url="https://www.zlib.net/"
+license=('zlib')
+groups=('cygwin-toolchain')
+depends=('cygwin')
+makedepends=('cygwin-gcc')
+conflicts=('cygwin-minizip')
+provides=('cygwin-minizip')
+options=('!strip' 'staticlibs' '!buildflags')
+source=("https://zlib.net/fossils/zlib-${pkgver}.tar.gz"
+        "zlib-1.3-CVE-2023-45853.patch::https://github.com/madler/zlib/commit/73331a6a0481067628f065ffe87bb1d8f787d10c.patch"
+        cygwin-configure.patch
+        cygming-dllexport.patch)
+sha256sums=('ff0ba4c292013dbc27530b3a81e1f9a813cd39de01ca5e0f8bf355702efa593e'
+            '7aa0221bf62796c29ae665ef3dd138489e1995b7095924dc035104959da13417'
+            '93db8545c87b8c8002d89ad74f8b95bb992cf89ee4b71edb78e1b0ca6a8db7dd'
+            '6464114e04370a470432ff884abc987f79830d6e56bed26169fd9d86edd17ec7')
+
+_targets="x86_64-pc-cygwin"
+
+prepare() {
+  cd "$srcdir"/zlib-${pkgver}
+  patch -Np1 -i ../zlib-1.3-CVE-2023-45853.patch
+  patch -Np2 -i ../cygwin-configure.patch
+  patch -Np2 -i ../cygming-dllexport.patch
+}
+
+build() {
+  for _target in ${_targets}; do
+    echo "Building for ${_target}"
+    rm -rf build-${_target}
+    cp -r zlib-${pkgver} build-${_target}
+    pushd build-${_target}
+      ./configure --prefix=/usr/${_target} -shared -static
+      make -f win32/Makefile.gcc \
+        CC=${_target}-gcc \
+        AR=${_target}-ar \
+        RC=${_target}-windres \
+        STRIP=: \
+        SHAREDLIB=cygz.dll \
+        IMPLIB=libz.dll.a \
+        CFLAGS="-Wp,-D_FORTIFY_SOURCE=2 -O2 -g -pipe -fno-plt -fexceptions --param=ssp-buffer-size=4 -Wformat -Werror=format-security -fcf-protection"
+    popd
+  done
+}
+
+package() {
+  for _target in ${_targets}; do
+    echo "Installing for ${_target}"
+    cd "$srcdir"/build-${_target}
+    install -d "$pkgdir"/usr/${_target}/{bin,include,lib}
+    install -m644 -t "$pkgdir"/usr/${_target}/include zlib.h zconf.h
+    install -m644 -t "$pkgdir"/usr/${_target}/lib libz.a libz.dll.a
+    install -m755 -t "$pkgdir"/usr/${_target}/bin cygz.dll
+
+    install -d "$pkgdir"/usr/${_target}/lib/pkgconfig
+    sed "s,@prefix@,/usr/${_target},;s,@exec_prefix@,\${prefix},;s,@libdir@,\${exec_prefix}/lib,;s,@sharedlibdir@,\${libdir},;s,@includedir@,\${prefix}/include,;s,@VERSION@,${pkgver}," < zlib.pc.in > "$pkgdir"/usr/${_target}/lib/pkgconfig/zlib.pc
+
+    ${_target}-strip -x -g "$pkgdir"/usr/${_target}/bin/*.dll
+    ${_target}-strip -g "$pkgdir"/usr/${_target}/lib/*.a
+  done
+
+  install -Dm644 "$srcdir"/zlib-${pkgver}/LICENSE -t "$pkgdir"/usr/share/licenses/${pkgname}/
+}
