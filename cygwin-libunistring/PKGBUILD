@@ -1,0 +1,42 @@
+pkgname=cygwin-libunistring
+pkgver=1.1
+pkgrel=1
+pkgdesc="Library for manipulating Unicode strings and C strings (Cygwin)"
+arch=('any')
+url="https://www.gnu.org/software/libunistring/"
+license=('GPL')
+groups=('cygwin-toolchain')
+depends=('cygwin' 'cygwin-libiconv')
+makedepends=('cygwin-configure')
+options=('!strip' 'staticlibs' '!buildflags')
+source=("https://ftp.gnu.org/gnu/libunistring/libunistring-${pkgver}.tar.xz")
+sha256sums=('827c1eb9cb6e7c738b171745dac0888aa58c5924df2e59239318383de0729b98')
+
+_targets="x86_64-pc-cygwin"
+
+build() {
+  cd libunistring-${pkgver}
+  for _target in ${_targets}; do
+    echo "Building for ${_target}"
+    mkdir -p build-${_target} && pushd build-${_target}
+      ${_target}-configure
+      make
+    popd
+  done
+}
+
+package() {
+  cd libunistring-${pkgver}
+  for _target in ${_targets}; do
+    echo "Installing for ${_target}"
+    (cd build-${_target} && make DESTDIR="$pkgdir" install)
+    find "$pkgdir"/usr/${_target} -name '*.dll' -exec ${_target}-strip --strip-unneeded {} \;
+    find "$pkgdir"/usr/${_target} -name '*.a' -o -name '*.dll' | xargs ${_target}-strip -g
+    # remove unnecessary files
+    rm -rf "$pkgdir"/usr/${_target}/share/doc
+    # remove dir file
+    rm -rf "$pkgdir"/usr/${_target}/share/info/dir
+  done
+  install -Dm644 COPYING "$pkgdir"/share/licenses/${pkgname}/COPYING
+  install -Dm644 COPYING.LIB "$pkgdir"/share/licenses/${pkgname}/COPYING.LIB
+}
