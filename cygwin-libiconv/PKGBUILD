@@ -1,0 +1,65 @@
+pkgname=cygwin-libiconv
+pkgver=1.17
+pkgrel=1
+pkgdesc="Provides GNU libiconv.so and libcharset.so (Cygwin)"
+arch=('any')
+url="http://www.gnu.org/software/libiconv/"
+license=('LGPL')
+groups=('cygwin-toolchain')
+depends=('cygwin')
+makedepends=('cygwin-configure')
+options=('!strip' 'staticlibs' '!libtool' '!buildflags')
+source=("http://ftp.gnu.org/pub/gnu/libiconv/libiconv-${pkgver}.tar.gz"
+        cygwin-encoding-aliases.patch
+        cygwin-charset.patch)
+sha256sums=('8f74213b56238c85a50a5329f77e06198771e70dd9a739779f4c02f65d971313'
+            'af92deee987d6258729a3b938ef841e63312de860c87f8a4821f272082b42e6a'
+            'be898b7166ed198094782cf107125e94df255df5774e31f372500284a97cd433')
+
+_targets="x86_64-pc-cygwin"
+
+prepare() {
+  cd "$srcdir"/libiconv-${pkgver}
+  patch -Np1 -i ../cygwin-encoding-aliases.patch
+  patch -Np2 -i ../cygwin-charset.patch
+
+  make -j1 -f Makefile.devel lib/aliases.h
+
+  rm -f m4/{libtool,lt*}.m4
+  rm -f libcharset/m4/{libtool,lt*}.m4
+  autoreconf -ifv -I `pwd`/m4 -I `pwd`/srcm4
+}
+
+build() {
+  cd "$srcdir"/libiconv-${pkgver}
+  for _target in ${_targets}; do
+    echo "Building for ${_target}"
+    mkdir -p build-${_target} && pushd build-${_target}
+      ${_target}-configure \
+          --enable-static \
+          --enable-shared \
+          --enable-extra-encodings \
+          --disable-rpath \
+          --disable-nls \
+          am_cv_proto_iconv_arg1= \
+          am_cv_proto_iconv="extern size_t iconv (iconv_t cd, char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);"
+      make
+    popd
+  done
+}
+
+package() {
+  cd "$srcdir"/libiconv-${pkgver}
+  for _target in ${_targets}; do
+    echo "Installing for ${_target}"
+    (cd build-${_target} && make DESTDIR="$pkgdir" install -j1)
+    ${_target}-strip --strip-unneeded "$pkgdir"/usr/${_target}/bin/*.dll
+    ${_target}-strip -g "$pkgdir"/usr/${_target}/lib/*.a
+    # remove unnecessary files
+    rm -r "$pkgdir"/usr/${_target}/share
+  done
+  install -Dm644 COPYING.LIB "$pkgdir"/share/licenses/${pkgname}/COPYING.LIB
+  install -Dm644 libcharset/COPYING.LIB "$pkgdir"/share/licenses/${pkgname}/libcharset/COPYING.LIB
+  # cleanup exes
+  find "$pkgdir" -type f -name \*.exe -delete
+}
