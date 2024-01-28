@@ -1,5 +1,5 @@
 pkgname=cygwin
-pkgver=3.4.10
+pkgver=3.5.0
 pkgrel=1
 pkgdesc="POSIX compatibility C runtime for Windows"
 arch=('any')
@@ -9,7 +9,8 @@ groups=('cygwin-toolchain')
 makedepends=('perl' 'cocom' 'cygwin-gcc' 'cygwin-binutils'
              'cygwin-w32api-runtime' 'cygwin-w32api-headers')
 options=('!strip' '!buildflags' 'staticlibs' '!emptydirs')
-source=("git+https://cygwin.com/git/newlib-cygwin#branch=${pkgname}-${pkgver}-0-g89a1e4a573d4")
+_branch="${pkgname}-${pkgver}-0-g31f7cd1e4332"
+source=("git+https://cygwin.com/git/newlib-cygwin#branch=${_branch}")
 md5sums=('SKIP')
 
 _targets="x86_64-pc-cygwin"
@@ -20,6 +21,10 @@ prepare() {
 }
 
 build() {
+  # Windows 8.1 minimal supported systems
+  export CFLAGS+=" -march=nocona -msahf"
+  export CXXFLAGS+=" -march=nocona -msahf"
+
   for _target in ${_targets}; do
     echo "Building for ${_target}"
     mkdir -p "$srcdir"/build-${_target} && cd "$srcdir"/build-${_target}
