@@ -1,0 +1,11 @@
+--- origsrc/libxml2-2.9.12/include/libxml/xmlexports.h	2021-05-13 14:53:51.000000000 +0200
++++ src/libxml2-2.9.12/include/libxml/xmlexports.h	2022-01-07 06:26:25.339270400 +0100
+@@ -8,7 +8,7 @@
+ #ifndef __XML_EXPORTS_H__
+ #define __XML_EXPORTS_H__
+ 
+-#if defined(_WIN32) || defined(__CYGWIN__)
++#if defined(_WIN32) && defined(__CYGWIN__)
+ /** DOC_DISABLE */
+ 
+ #ifdef LIBXML_STATIC

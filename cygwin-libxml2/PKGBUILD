@@ -1,0 +1,65 @@
+pkgname=cygwin-libxml2
+pkgver=2.10.4
+pkgrel=1
+pkgdesc="XML C parser and toolkit (Cygwin)"
+arch=('any')
+url="https://gitlab.gnome.org/GNOME/libxml2/-/wikis/home"
+license=('custom:MIT')
+groups=('cygwin-toolchain')
+depends=('cygwin' 'cygwin-libiconv' 'cygwin-xz' 'cygwin-readline' 'cygwin-zlib')
+makedepends=('cygwin-configure')
+options=('!strip' 'staticlibs' '!buildflags')
+source=("https://download.gnome.org/sources/libxml2/${pkgver%.*}/libxml2-${pkgver}.tar.xz"
+        cygwin-exports.patch)
+sha256sums=('ed0c91c5845008f1936739e4eee2035531c1c94742c6541f44ee66d885948d45'
+            'e156c5c34d11916b28377b6fe989cde3f7c8c51c13c62cb30432c4bf07d173e5')
+
+_targets="x86_64-pc-cygwin"
+
+prepare() {
+  cd "$srcdir"/libxml2-${pkgver}
+  patch -Np2 -i ../cygwin-exports.patch
+
+  # disable doc & examples
+  sed -i "s| doc example | |g" Makefile.am
+  autoreconf -vfi
+}
+
+build() {
+  cd "$srcdir"/libxml2-${pkgver}
+  for _target in ${_targets}; do
+    echo "Building for ${_target}"
+    mkdir -p build-${_target} && pushd build-${_target}
+      ${_target}-configure \
+          --sysconfdir=/etc \
+          --with-history \
+          --with-ftp \
+          --without-python
+      make
+
+      # deps symbols are not included in static lib:
+      ${_target}-ar x /usr/${_target}/lib/libiconv.a
+      ${_target}-ar x /usr/${_target}/lib/liblzma.a
+      ${_target}-ar x /usr/${_target}/lib/libreadline.a
+      ${_target}-ar x /usr/${_target}/lib/libz.a
+      ${_target}-ar cru .libs/libxml2.a *.o
+      ${_target}-ranlib .libs/libxml2.a
+    popd
+  done
+}
+
+package() {
+  cd "$srcdir"/libxml2-${pkgver}
+  for _target in ${_targets}; do
+    echo "Installing for ${_target}"
+    (cd build-${_target} && make DESTDIR="$pkgdir" install)
+    ${_target}-strip --strip-unneeded "$pkgdir"/usr/${_target}/bin/*.dll
+    ${_target}-strip --strip-debug "$pkgdir"/usr/${_target}/lib/*.a
+    # remove unnecessary files
+    rm -rf "$pkgdir"/usr/${_target}/share/{,gtk-}doc
+    rm -rf "$pkgdir"/usr/${_target}/share/man
+  done
+  install -Dm644 Copyright -t "$pkgdir"/usr/share/licenses/${pkgname}
+  # cleanup exes
+  find "$pkgdir" -type f -name \*.exe -delete
+}
