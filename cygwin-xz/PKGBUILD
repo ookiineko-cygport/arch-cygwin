@@ -44,7 +44,6 @@ package() {
   done
   install -d -m0755 "$pkgdir"/usr/share/licenses/${pkgname}/
   ln -sf /usr/share/doc/${pkgname}/COPYING "$pkgdir"/usr/share/licenses/${pkgname}/
-  ln -sf /usr/share/licenses/common/GPL2/license.txt "$pkgdir"/usr/share/doc/${pkgname}/COPYING.GPLv2
   # cleanup exes
   find "$pkgdir" -type f -name \*.exe -delete
 }
