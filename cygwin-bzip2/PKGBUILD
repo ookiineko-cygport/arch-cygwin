@@ -1,0 +1,55 @@
+pkgname=cygwin-bzip2
+pkgver=1.0.8
+pkgrel=1
+pkgdesc="A high-quality data compression program (Cygwin)"
+arch=('any')
+url="https://sourceware.org/bzip2/"
+license=('BSD')
+groups=('cygwin-toolchain')
+depends=('cygwin')
+makedepends=('cygwin-configure')
+options=('!strip' 'staticlibs' '!buildflags' '!emptydirs')
+source=("https://sourceware.org/pub/bzip2/bzip2-${pkgver}.tar.gz"
+        bzip2-1.0.5-autoconfiscated.patch)
+sha256sums=('ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269'
+            '5ca7cbdb94b0f3c3dfe911a9b35eb65afcc8bd71c1707254f60ea629ef2d7c7b')
+
+_targets="x86_64-pc-cygwin"
+
+prepare() {
+  cd "$srcdir"/bzip2-${pkgver}
+
+  # remove files created by patch
+  rm -f autogen.sh README.autotools configure.ac Makefile.am bzip2.pc.in
+
+  patch -Np1 -i ../bzip2-1.0.5-autoconfiscated.patch
+
+  chmod +x autogen.sh && ./autogen.sh
+}
+
+build() {
+  cd "$srcdir"/bzip2-${pkgver}
+  for _target in ${_targets}; do
+    echo "Building for ${_target}"
+    mkdir -p build-${_target} && pushd build-${_target}
+      ${_target}-configure
+      make
+    popd
+  done
+}
+
+package() {
+  cd "$srcdir"/bzip2-${pkgver}
+  for _target in ${_targets}; do
+    echo "Installing for ${_target}"
+    (cd build-${_target} && make DESTDIR="$pkgdir" install)
+    ${_target}-strip --strip-unneeded "$pkgdir"/usr/${_target}/bin/*.dll
+    ${_target}-strip -g "$pkgdir"/usr/${_target}/lib/*.a
+    # remove unnecessary files
+    find "$pkgdir"/usr/${_target}/bin/ ! -type d ! -name \*.dll -delete
+    rm -r "$pkgdir"/usr/${_target}/share/man/
+  done
+  install -Dm644 COPYING "$pkgdir"/usr/share/licenses/${pkgname}/COPYING
+  # cleanup exes
+  find "$pkgdir" -type f -name \*.exe -delete
+}
