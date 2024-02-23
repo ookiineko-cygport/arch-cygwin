@@ -1,0 +1,21 @@
+--- origsrc/libxcrypt-4.4.20/lib/crypt-port.h	2021-05-01 11:21:38.000000000 +0200
++++ src/libxcrypt-4.4.20/lib/crypt-port.h	2021-05-20 09:36:19.083948000 +0200
+@@ -208,6 +208,7 @@ extern size_t strcpy_or_abort (void *dst
+ 
+ /* Starting with GCC 10, we can use the symver attribute, which is also
+    needed at the point we decide to enable link-time optimization.  */
++#ifdef __ELF__
+ # if __GNUC__ >= 10
+ 
+ /* Set the symbol version for EXTNAME, which uses INTNAME as its
+@@ -230,6 +231,10 @@ extern size_t strcpy_or_abort (void *dst
+ # endif
+ 
+ #else
++#define symver_set(...) symver_nop()
++#endif
++
++#else
+ # error "Don't know how to do symbol versioning with this compiler"
+ #endif
+ 

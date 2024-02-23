@@ -1,0 +1,58 @@
+pkgname=cygwin-libxcrypt
+pkgver=4.4.20
+pkgrel=1
+pkgdesc="Modern library for one-way hashing of passwords (Cygwin)"
+arch=('any')
+url="https://github.com/besser82/libxcrypt/"
+license=('LGPL')
+groups=('cygwin-toolchain')
+depends=('cygwin')
+makedepends=('cygwin-configure' 'perl')
+options=('!strip' 'staticlibs' '!buildflags' '!emptydirs')
+source=("${url}archive/v${pkgver}/libxcrypt-v${pkgver}.tar.gz"
+        backport-perl-script-fixes.patch
+        cygwin-dllexport.patch
+        cygwin-config.patch)
+sha256sums=('9cd2f8dd2566eafbb49cc9336d4f6e59b9ff42aadc049bba3561f4019169c3db'
+            'd442f9693826f535f3442b94203097cc4e271f0c8f23ae6012ec393f8da7224a'
+            'ac74dd2f07502793a5c85ce2b74652b6dac2ce51d072af9762c6a14900eb9f6d'
+            'a963ef481bcdf19bc4b535b7487aecbf5f44eb045435569f1526d35bfa8bac0a')
+
+_targets="x86_64-pc-cygwin"
+
+prepare() {
+  cd "$srcdir"/libxcrypt-${pkgver}
+
+  patch -Np1 -i ../backport-perl-script-fixes.patch
+  patch -Np2 -i ../cygwin-dllexport.patch
+  patch -Np2 -i ../cygwin-config.patch
+
+  autoreconf -fi
+}
+
+build() {
+  cd "$srcdir"/libxcrypt-${pkgver}
+  for _target in ${_targets}; do
+    echo "Building for ${_target}"
+    mkdir -p build-${_target} && pushd build-${_target}
+      ${_target}-configure \
+        --disable-symvers \
+        --enable-obsolete-api=no \
+        --disable-failure-tokens
+      make
+    popd
+  done
+}
+
+package() {
+  cd "$srcdir"/libxcrypt-${pkgver}
+  for _target in ${_targets}; do
+    echo "Installing for ${_target}"
+    (cd build-${_target} && make DESTDIR="$pkgdir" install)
+    find "$pkgdir"/usr/${_target} -name '*.dll' -exec ${_target}-strip --strip-unneeded {} \;
+    find "$pkgdir"/usr/${_target} -name '*.a' -o -name '*.dll' | xargs ${_target}-strip -g
+    # remove unnecessary files
+    rm -r "$pkgdir"/usr/${_target}/share/man/
+  done
+  install -Dm644 COPYING.LIB "$pkgdir"/usr/share/licenses/${pkgname}/COPYING.LIB
+}
