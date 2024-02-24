@@ -9,7 +9,38 @@ And possibly more packages (or some build tool wrappers) can be added in the fut
 
 ## Install
 
-To use, build and install these packages one by one, and in the following order:
+> [!NOTE]
+>
+> Currently only building on x86_64 archlinux is supported, if you want to build on other architectures,
+> which is untested, you can try to follow the [Bootstrapping](#bootstrapping) instructions to build the cross compilers yourself.
+>
+> Please feel free to open an [Issue](../../issues) if you run into any problem.
+
+Precompiled binary packages are available from [GitHub Releases](../../releases),
+
+> [!NOTE]
+>
+> You will still have to build non-binary packages, e.g. `cygwin-pkg-config`, `cygwin-configure`, `cygwin-cmake`,
+> yourself. Please refer to the [Building](#building) section.
+
+to use them, add the following lines to the end of your `/etc/pacman.conf` and sync the database using `pacman -Syu`:
+
+```text
+[arch-cygwin]
+Server = https://github.com/ookiineko/arch-cygwin/releases/download/snapshot
+```
+
+Then you should be able to install packages like this: `pacman -S cygwin-gcc cygwin-libiconv cygwin-zlib`
+
+### Building
+
+First, clone this repository using Git and make sure you have installed `base-devel` package group from archlinux repository before proceeding.
+
+And then simply run `makepkg -si` in a subdirectory in order to build and install that package.
+
+#### Bootstrapping
+
+When bootstrapping the cross compilers, build and install the following packages one by one, and in this order:
 
   * cygwin-binutils
   * cygwin-w32api-headers
@@ -18,3 +49,29 @@ To use, build and install these packages one by one, and in the following order:
   * cygwin-gcc
   * cygwin-w32api-runtime (replaces the `-bin` one)
   * cygwin (replaces the `-bin` one; requires `cocom` to build)
+
+After that other packages can be built and installed normally ;)
+
+##### See also
+
+[Cygwin documentation: Building a cross-compiler](https://x.cygwin.com/docs/cg/cross.html)
+
+## Contributing
+
+Please refer to [ArchWiki: MinGW package guidelines](https://wiki.archlinux.org/title/MinGW_package_guidelines).
+
+## Credits
+
+Special thanks to the following external sources where arch-cygwin took references or borrowed code from (unsorted):
+
+  * [cygwin-packages](https://cygwin.com/cgit/cygwin-packages) (For Cygwin quirks and patches!)
+
+  * [MinGW-w64 packages on AUR](https://aur.archlinux.org/packages?K=mingw-w64) (For various kinds of wrappers, and packaging rules!)
+
+  * [msys2/MINGW-packages](https://github.com/msys2/MINGW-packages) (For LLVM build quirks)
+
+  * [Fedora Cygwin](https://copr.fedorainfracloud.org/coprs/yselkowitz/cygwin/) (For Cygwin quirks when cross compiling)
+
+  * [archlinux packaging](https://gitlab.archlinux.org/archlinux/packaging/packages)
+
+  * [yselkowitz's Fedora GIT](https://fedorapeople.org/cgit/yselkowitz/)
