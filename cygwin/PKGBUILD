@@ -1,5 +1,5 @@
 pkgname=cygwin
-pkgver=3.5.0
+pkgver=3.5.1
 pkgrel=1
 pkgdesc="POSIX compatibility C runtime for Windows"
 arch=('any')
@@ -9,7 +9,7 @@ groups=('cygwin-toolchain')
 makedepends=('perl' 'cocom' 'cygwin-gcc' 'cygwin-binutils'
              'cygwin-w32api-runtime' 'cygwin-w32api-headers')
 options=('!strip' '!buildflags' 'staticlibs' '!emptydirs')
-_branch="${pkgname}-${pkgver}-0-g31f7cd1e4332"
+_branch="${pkgname}-${pkgver}-0-ga5744289b71a"
 source=("git+https://cygwin.com/git/newlib-cygwin#branch=${_branch}")
 md5sums=('SKIP')
 
