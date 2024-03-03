@@ -1,0 +1,52 @@
+pkgname=cygwin-brotli
+_gitcommit=ed738e842d2fbdf2d6459e39267a633c4a9b2f5d
+pkgver=1.1.0
+pkgrel=1
+pkgdesc="Generic-purpose lossless compression algorithm (Cygwin)"
+arch=('any')
+url="https://github.com/google/brotli"
+license=('MIT')
+groups=('cygwin-toolchain')
+depends=('cygwin')
+makedepends=('git' 'cygwin-cmake')
+options=('!strip' 'staticlibs' '!buildflags')
+source=("brotli::git+${url}#commit=${_gitcommit}")
+sha256sums=('SKIP')
+
+_targets="x86_64-pc-cygwin"
+
+pkgver() {
+  cd brotli
+  git describe --tags --match 'v*' | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+build() {
+  cd "$srcdir"/brotli
+  for _target in ${_targets}; do
+    echo "Building static library for ${_target}"
+    mkdir -p build-${_target}-static && pushd build-${_target}-static
+      ${_target}-cmake -DBUILD_SHARED_LIBS=OFF ..
+      make
+    popd
+    echo "Building shared library for ${_target}"
+    mkdir -p build-${_target}-shared && pushd build-${_target}-shared
+      ${_target}-cmake -DBUILD_SHARED_LIBS=ON ..
+      make
+    popd
+  done
+}
+
+package() {
+  cd "$srcdir"/brotli
+  for _target in ${_targets}; do
+    echo "Installing static library for ${_target}"
+    (cd build-${_target}-static && make DESTDIR="$pkgdir" install)
+    echo "Installing shared library for ${_target}"
+    (cd build-${_target}-shared && make DESTDIR="$pkgdir" install)
+    ${_target}-strip --strip-unneeded "$pkgdir"/usr/${_target}/bin/*.dll
+    ${_target}-strip -g "$pkgdir"/usr/${_target}/lib/*.a
+  done
+  install -Dm 644 LICENSE -t "$pkgdir"/usr/share/licenses/${pkgname}
+  # cleanup exes
+  find "$pkgdir" -type f -name \*.exe -delete
+}
