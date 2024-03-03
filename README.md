@@ -23,10 +23,11 @@ Precompiled binary packages are available from [GitHub Releases](../../releases)
 > You will still have to build non-binary packages, e.g. `cygwin-pkg-config`, `cygwin-configure`, `cygwin-cmake`,
 > yourself. Please refer to the [Building](#building) section.
 
-to use them, add the following lines to the end of your `/etc/pacman.conf` and sync the database using `pacman -Syu`:
+to use them, add the following lines to the end of your `/etc/pacman.conf` (note pkgs are currently not signed) and sync the database using `pacman -Syu`:
 
 ```text
 [arch-cygwin]
+SigLevel = Optional
 Server = https://github.com/ookiineko/arch-cygwin/releases/download/snapshot
 ```
 
