@@ -1,0 +1,91 @@
+--- origsrc/zstd-1.5.5/lib/Makefile
++++ src/zstd-1.5.5/lib/Makefile
+@@ -83,6 +83,17 @@
+   SHARED_EXT = so
+   SHARED_EXT_MAJOR = $(SHARED_EXT).$(LIBVER_MAJOR)
+   SHARED_EXT_VER = $(SHARED_EXT).$(LIBVER)
++  ifeq ($(OS), Cygwin)
++    SHARED_PFX = cyg
++    SHARED_EXT = dll.a
++    SHARED_EXT_VER = -$(LIBVER_MAJOR).dll
++    SONAME_FLAGS = -Wl,--out-implib,libzstd.$(SHARED_EXT)
++  else ifneq (,$(filter Windows%,$(OS)))
++    SHARED_PFX = lib
++    SHARED_EXT = dll.a
++    SHARED_EXT_VER = -$(LIBVER_MAJOR).dll
++    SONAME_FLAGS = -Wl,--out-implib,libzstd.$(SHARED_EXT)
++  endif
+ endif
+
+ 
+@@ -126,13 +132,12 @@
+ 
+ endif
+ 
+-ifneq (,$(filter Windows%,$(TARGET_SYSTEM)))
++ifneq (,$(filter Windows_NT Cygwin,$(TARGET_SYSTEM)))
+ 
+-LIBZSTD = dll/libzstd.dll
++LIBZSTD = $(SHARED_PFX)zstd$(SHARED_EXT_VER)
+ $(LIBZSTD): $(ZSTD_FILES)
+ 	@echo compiling dynamic library $(LIBVER)
+-	$(CC) $(FLAGS) -DZSTD_DLL_EXPORT=1 -Wl,--out-implib,dll/libzstd.dll.a -shared $^ -o $@
+-
++	@$(CC) $(FLAGS) -shared $^ -DPIC $(SONAME_FLAGS) -o $(LIBZSTD)
+ else  # not Windows
+ 
+ LIBZSTD = libzstd.$(SHARED_EXT_VER)
+@@ -264,6 +269,7 @@
+ exec_prefix ?= $(PREFIX)
+ EXEC_PREFIX ?= $(exec_prefix)
+ libdir      ?= $(EXEC_PREFIX)/lib
++DLLDIR      ?= $(PREFIX)/bin
+ LIBDIR      ?= $(libdir)
+ includedir  ?= $(PREFIX)/include
+ INCLUDEDIR  ?= $(includedir)
+@@ -292,9 +298,9 @@
+   INSTALL ?= install
+ endif
+ 
+-INSTALL_PROGRAM ?= $(INSTALL)
++INSTALL_PROGRAM ?= $(INSTALL) -m 755
+ INSTALL_DATA    ?= $(INSTALL) -m 644
+-
++INSTALL_LIB     ?= $(INSTALL) -m 755
+ 
+ libzstd.pc: libzstd.pc.in
+ 	@echo creating pkgconfig
+@@ -328,11 +334,16 @@
+ install-shared:
+ 	# only generate libzstd.so if it's not already present
+ 	[ -e $(LIBZSTD) ] || $(MAKE) libzstd-release
++ifneq (,$(filter Windows_NT Cygwin,$(TARGET_SYSTEM)))
++	$(INSTALL_LIB) -d -m 755 $(DESTDIR)$(DLLDIR)/
++	@echo Installing shared library
++	$(INSTALL_LIB) $(SHARED_PFX)zstd$(SHARED_EXT_VER) $(DESTDIR)$(DLLDIR)/
++	$(INSTALL_DATA) libzstd.$(SHARED_EXT) $(DESTDIR)$(LIBDIR)/
++else
+ 	[ -e $(DESTDIR)$(LIBDIR) ] || $(INSTALL) -d -m 755 $(DESTDIR)$(LIBDIR)/
+ 	@echo Installing shared library
+ 	$(INSTALL_PROGRAM) $(LIBZSTD) $(DESTDIR)$(LIBDIR)
+-	ln -sf $(LIBZSTD) $(DESTDIR)$(LIBDIR)/libzstd.$(SHARED_EXT_MAJOR)
+-	ln -sf $(LIBZSTD) $(DESTDIR)$(LIBDIR)/libzstd.$(SHARED_EXT)
++endif
+ 
+ .PHONY: install-includes
+ install-includes:
+@@ -346,8 +357,13 @@
+ uninstall:
+ 	$(RM) $(DESTDIR)$(LIBDIR)/libzstd.a
+ 	$(RM) $(DESTDIR)$(LIBDIR)/libzstd.$(SHARED_EXT)
++ifneq (,$(filter Windows_NT Cygwin,$(TARGET_SYSTEM)))
++	$(RM) $(DESTDIR)$(DLLDIR)/$(SHARED_PFX)zstd$(SHARED_EXT_VER)
++	$(RM) $(DESTDIR)$(LIBDIR)/libzstd.$(SHARED_EXT)
++else
+ 	$(RM) $(DESTDIR)$(LIBDIR)/libzstd.$(SHARED_EXT_MAJOR)
+ 	$(RM) $(DESTDIR)$(LIBDIR)/$(LIBZSTD)
++endif
+ 	$(RM) $(DESTDIR)$(PKGCONFIGDIR)/libzstd.pc
+ 	$(RM) $(DESTDIR)$(INCLUDEDIR)/zstd.h
+ 	$(RM) $(DESTDIR)$(INCLUDEDIR)/zstd_errors.h
+

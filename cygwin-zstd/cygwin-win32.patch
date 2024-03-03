@@ -1,0 +1,12 @@
+--- origsrc/zstd-1.5.5/programs/platform.h
++++ src/zstd-1.5.5/programs/platform.h
+@@ -160,7 +160,7 @@
+ #if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(_WIN32)
+ #  include <fcntl.h>   /* _O_BINARY */
+ #  include <io.h>      /* _setmode, _fileno, _get_osfhandle */
+-#  if !defined(__DJGPP__)
++#  if !defined(__DJGPP__) && !defined(__CYGWIN__)
+ #    include <windows.h> /* DeviceIoControl, HANDLE, FSCTL_SET_SPARSE */
+ #    include <winioctl.h> /* FSCTL_SET_SPARSE */
+ #    define SET_BINARY_MODE(file) { int const unused=_setmode(_fileno(file), _O_BINARY); (void)unused; }
+
