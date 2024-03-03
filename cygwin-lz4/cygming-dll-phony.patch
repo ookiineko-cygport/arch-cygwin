@@ -1,0 +1,42 @@
+--- src/lz4-1.9.4/Makefile.inc.orig	2022-08-16 06:45:31.000000000 +0800
++++ src/lz4-1.9.4/Makefile.inc	2024-03-03 17:23:45.974406115 +0800
+@@ -52,7 +52,7 @@
+ WINBASED   = yes
+     else
+       ifneq (,$(filter CYGWIN%,$(TARGET_OS)))
++LIBLZ4     = cyglz4-$(LIBVER_MAJOR).dll
+-LIBLZ4     = cyglz4-$(LIBVER_MAJOR)
+ WINBASED   = yes
+       else
+ LIBLZ4     = liblz4.$(SHARED_EXT_VER)
+--- src/lz4-1.9.4/lib/Makefile.orig	2022-08-16 06:45:31.000000000 +0800
++++ src/lz4-1.9.4/lib/Makefile	2024-03-03 17:23:48.306374882 +0800
+@@ -113,7 +113,7 @@
+ 
+ $(LIBLZ4): $(SRCFILES) liblz4-dll.o
+ 	@echo compiling dynamic library $(LIBVER)
++	$(CC) $(FLAGS) -DLZ4_DLL_EXPORT=1 -shared $^ -o $@ -Wl,--out-implib,$(LIBLZ4_EXP)
+-	$(CC) $(FLAGS) -DLZ4_DLL_EXPORT=1 -shared $^ -o dll/$@.dll -Wl,--out-implib,dll/$(LIBLZ4_EXP)
+ 
+ else   # not windows
+ 
+@@ -134,7 +134,7 @@
+ ifeq ($(WINBASED),yes)
+ 	$(RM) *.rc
+ endif
++	$(RM) core *.o liblz4.pc $(LIBLZ4) $(LIBLZ4_EXP)
+-	$(RM) core *.o liblz4.pc dll/$(LIBLZ4).dll dll/$(LIBLZ4_EXP)
+ 	$(RM) *.a *.$(SHARED_EXT) *.$(SHARED_EXT_MAJOR) *.$(SHARED_EXT_VER)
+ 	@echo Cleaning library completed
+ 
+@@ -191,8 +191,8 @@
+ # search them first in their directory. This allows to not pollute system
+ # directories (like c:/windows/system32), nor modify the PATH variable.
+     ifeq ($(WINBASED),yes)
++	$(INSTALL_PROGRAM) $(LIBLZ4) $(DESTDIR)$(bindir)
++	$(INSTALL_PROGRAM) $(LIBLZ4_EXP) $(DESTDIR)$(libdir)
+-	$(INSTALL_PROGRAM) dll/$(LIBLZ4).dll $(DESTDIR)$(bindir)
+-	$(INSTALL_PROGRAM) dll/$(LIBLZ4_EXP) $(DESTDIR)$(libdir)
+     else
+ 	$(INSTALL_PROGRAM) liblz4.$(SHARED_EXT_VER) $(DESTDIR)$(libdir)
+ 	$(LN_SF) liblz4.$(SHARED_EXT_VER) $(DESTDIR)$(libdir)/liblz4.$(SHARED_EXT_MAJOR)
