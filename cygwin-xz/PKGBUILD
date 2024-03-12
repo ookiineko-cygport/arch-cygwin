@@ -1,5 +1,5 @@
 pkgname=cygwin-xz
-pkgver=5.6.0
+pkgver=5.6.1
 pkgrel=1
 pkgdesc="Library and command line tools for XZ and LZMA compressed files (Cygwin)"
 arch=('any')
@@ -12,7 +12,7 @@ conflicts=('cygwin-liblzma')
 provides=('cygwin-liblzma')
 options=('!strip' 'staticlibs' '!libtool' '!buildflags')
 source=("https://github.com/tukaani-project/xz/releases/download/v${pkgver}/xz-${pkgver}.tar.gz")
-sha256sums=('0f5c81f14171b74fcc9777d302304d964e63ffc2d7b634ef023a7249d9b5d875')
+sha256sums=('2398f4a8e53345325f44bdd9f0cc7401bd9025d736c6d43b372f4dea77bf75b8')
 
 _targets="x86_64-pc-cygwin"
 
