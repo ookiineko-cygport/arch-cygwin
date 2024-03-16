@@ -1,0 +1,39 @@
+pkgname=cygwin-libisl
+pkgver=0.26
+pkgrel=1
+pkgdesc="Library for manipulating sets and relations of integer points bounded by linear constraints (Cygwin)"
+arch=('any')
+url="https://libisl.sourceforge.io"
+license=('MIT')
+groups=('cygwin-toolchain')
+depends=('cygwin' 'cygwin-gmp')
+makedepends=('cygwin-configure')
+options=('!strip' 'staticlibs' '!libtool' '!buildflags')
+source=("https://libisl.sourceforge.io/isl-${pkgver}.tar.xz")
+sha256sums=('a0b5cb06d24f9fa9e77b55fabbe9a3c94a336190345c2555f9915bb38e976504')
+
+_targets="x86_64-pc-cygwin"
+
+build() {
+  cd "$srcdir"/isl-${pkgver}
+  for _target in ${_targets}; do
+    echo "Building for ${_target}"
+    mkdir -p build-${_target} && pushd build-${_target}
+      ${_target}-configure
+      make LDFLAGS=-no-undefined
+    popd
+  done
+}
+
+package() {
+  cd "$srcdir"/isl-${pkgver}
+  for _target in ${_targets}; do
+    echo "Installing for ${_target}"
+    (cd build-${_target} && make DESTDIR="$pkgdir" install)
+    find "$pkgdir"/usr/${_target} -name '*.dll' -exec ${_target}-strip --strip-unneeded {} \;
+    find "$pkgdir"/usr/${_target} -name '*.a' -o -name '*.dll' | xargs ${_target}-strip -g
+    # remove unnecessary files
+    rm "$pkgdir"/usr/${_target}/lib/libisl.dll.a-gdb.py
+  done
+  install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/${pkgname}/LICENSE
+}
