@@ -1,0 +1,44 @@
+pkgname=cygwin-gmp
+pkgver=6.3.0
+pkgrel=1
+pkgdesc="A free library for arbitrary precision arithmetic (Cygwin)"
+arch=('any')
+url="https://gmplib.org/"
+license=('LGPL3' 'GPL')
+groups=('cygwin-toolchain')
+depends=('cygwin')
+makedepends=('cygwin-configure')
+options=('!strip' 'staticlibs' '!buildflags' '!emptydirs')
+source=("https://gmplib.org/download/gmp/gmp-${pkgver}.tar.lz")
+sha256sums=('be5c908a7a836c3a9bd9d62aa58563c5e9e7fef94c43a7f42dbc35bb6d02733c')
+
+_targets="x86_64-pc-cygwin"
+
+build() {
+  export CFLAGS+=' -Wno-attributes'
+  export CXXFLAGS+=' -Wno-attributes'
+
+  cd "$srcdir"/gmp-${pkgver}
+  for _target in ${_targets}; do
+    echo "Building for ${_target}"
+    mkdir -p build-${_target} && pushd build-${_target}
+      ${_target}-configure \
+        --enable-cxx \
+        --enable-fat \
+        --disable-static
+      make
+    popd
+  done
+}
+
+package() {
+  cd "$srcdir"/gmp-${pkgver}
+  for _target in ${_targets}; do
+    echo "Installing for ${_target}"
+    (cd build-${_target} && make DESTDIR="$pkgdir" install)
+    ${_target}-strip --strip-unneeded "$pkgdir"/usr/${_target}/bin/*.dll
+    ${_target}-strip -g "$pkgdir"/usr/${_target}/lib/*.a
+    # remove unnecessary files
+    rm -r "$pkgdir"/usr/${_target}/share/info/
+  done
+}
