@@ -14,6 +14,9 @@ set (CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set (CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set (CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
+# Make sure protoc version matches the library
+set (Protobuf_PROTOC_EXECUTABLE /usr/bin/cygwin-protoc)
+
 # set the resource compiler (RHBZ #652435)
 set (CMAKE_RC_COMPILER @TRIPLE@-windres)
 set (CMAKE_MC_COMPILER @TRIPLE@-windmc)

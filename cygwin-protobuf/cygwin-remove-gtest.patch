@@ -1,0 +1,15 @@
+--- origsrc/protobuf-21.12/configure.ac
++++ src/protobuf-21.12/configure.ac
+@@ -239,9 +239,9 @@ AM_CONDITIONAL([OBJC_CONFORMANCE_TEST],
+ # HACK:  Make gmock's configure script pick up our copy of CFLAGS and CXXFLAGS,
+ #   since the flags added by ACX_CHECK_SUNCC must be used when compiling gmock
+ #   too.
+-export CFLAGS
+-export CXXFLAGS
+-AC_CONFIG_SUBDIRS([third_party/googletest])
++#export CFLAGS
++#export CXXFLAGS
++#AC_CONFIG_SUBDIRS([third_party/googletest])
+ 
+ AC_CONFIG_FILES([Makefile src/Makefile benchmarks/Makefile conformance/Makefile protobuf.pc protobuf-lite.pc])
+ AC_OUTPUT

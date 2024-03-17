@@ -1,13 +1,14 @@
 pkgname=cygwin-cmake
 pkgver=1
-pkgrel=2
+pkgrel=3
 pkgdesc="CMake wrapper for Cygwin"
 arch=('any')
 url="http://fedoraproject.org/wiki/MinGW"
 license=('GPL')
 groups=('cygwin-toolchain')
 depends=('cmake' 'cygwin-gcc' 'cygwin-pkg-config' 'cygwin-environment')
-optdepends=('cygwin-wine: runtime support')
+optdepends=('cygwin-wine: runtime support'
+            'cygwin-protobuf: protoc support')
 source=(cygwin-cmake.sh
         toolchain-cygwin.cmake)
 md5sums=('SKIP' 'SKIP')
