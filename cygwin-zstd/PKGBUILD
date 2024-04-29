@@ -1,5 +1,5 @@
 pkgname=cygwin-zstd
-pkgver=1.5.5
+pkgver=1.5.6
 pkgrel=1
 pkgdesc="Zstandard - Fast real-time compression algorithm (Cygwin)"
 arch=('any')
@@ -12,7 +12,7 @@ options=('!strip' 'staticlibs' '!buildflags')
 source=("https://github.com/facebook/zstd/releases/download/v${pkgver}/zstd-${pkgver}.tar.zst"
         cygming-config.patch
         cygwin-win32.patch)
-sha256sums=('ce264bca60eb2f0e99e4508cffd0d4d19dd362e84244d7fc941e79fa69ccf673'
+sha256sums=('4aa8dd1c1115c0fd6b6b66c35c7f6ce7bd58cc1dfd3e4f175b45b39e84b14352'
             '2204cb4b4864e4299a99740d9892414c3613cb74cdbb5ec851016295c1cf2d7b'
             'ef4cb21f3e27b1ff7e47108e287ae9f83692d77bea01c2f553310e7d16760e1e')
 
