@@ -16,12 +16,7 @@ And possibly more packages (or some build tool wrappers) can be added in the fut
 >
 > Please feel free to open an [Issue](../../issues) if you run into any problem.
 
-Precompiled binary packages are available from [GitHub Releases](../../releases),
-
-> [!NOTE]
->
-> You will still have to build non-binary packages, e.g. `cygwin-pkg-config`, `cygwin-configure`, `cygwin-cmake`,
-> yourself. Please refer to the [Building](#building) section.
+All packages are precompiled and available for downloading at [GitHub Releases](../../releases),
 
 to use them, add the following lines to the end of your `/etc/pacman.conf` (note pkgs are currently not signed) and sync the database using `pacman -Syu`:
 
