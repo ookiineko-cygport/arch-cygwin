@@ -57,7 +57,7 @@ build() {
   for _target in ${_targets}; do
     echo "Building ${_target} cross gcc"
     mkdir -p "$srcdir"/build-${_target} && cd "$srcdir"/build-${_target}
-    "$srcdir"/gcc/configure --prefix=/usr --libexecdir=/usr/lib \
+    ../gcc/configure --prefix=/usr --libexecdir=/usr/lib \
         --target=${_target} \
         --with-bugurl=https://github.com/ookiineko-cygport/arch-cygwin/ \
         --enable-languages=c,c++,lto \

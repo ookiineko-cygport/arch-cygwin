@@ -21,7 +21,7 @@ build() {
         _configure_args="--disable-lib32 --enable-lib64"
     fi
     mkdir -p "$srcdir"/build-${_target} && cd "$srcdir"/build-${_target}
-    "$srcdir"/mingw-w64-v${pkgver}/mingw-w64-crt/configure --prefix=/usr/${_target} \
+    ../mingw-w64-v${pkgver}/mingw-w64-crt/configure --prefix=/usr/${_target} \
         --host=${_target} --enable-w32api \
         ${_configure_args}
     make

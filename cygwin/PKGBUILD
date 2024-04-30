@@ -28,7 +28,7 @@ build() {
   for _target in ${_targets}; do
     echo "Building for ${_target}"
     mkdir -p "$srcdir"/build-${_target} && cd "$srcdir"/build-${_target}
-    "$srcdir"/newlib-cygwin/configure --prefix=/usr/${_target} \
+    ../newlib-cygwin/configure --prefix=/usr/${_target} \
         --host=${_target} --target=${_target} \
         --disable-dumper --disable-doc \
         --with-cross-bootstrap

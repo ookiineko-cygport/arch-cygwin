@@ -21,7 +21,7 @@ build() {
   for _target in ${_targets}; do
     echo "Building for ${_target}"
     mkdir -p "$srcdir"/build-${_target} && cd "$srcdir"/build-${_target}
-    "$srcdir"/windows-default-manifest/configure \
+    ../windows-default-manifest/configure \
         --prefix=/usr/${_target} --host=${_target}
     make
   done

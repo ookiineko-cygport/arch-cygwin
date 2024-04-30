@@ -16,7 +16,7 @@ build() {
   for _target in ${_targets}; do
     echo "Configuring ${_target} headers"
     mkdir -p "$srcdir"/headers-${_target} && cd "$srcdir"/headers-${_target}
-    "$srcdir"/mingw-w64-v${pkgver}/mingw-w64-headers/configure \
+    ../mingw-w64-v${pkgver}/mingw-w64-headers/configure \
         --prefix=/usr/${_target} --host=${_target} \
         --enable-sdk=all --enable-w32api
   done
