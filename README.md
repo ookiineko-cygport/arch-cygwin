@@ -39,12 +39,15 @@ And then simply run `makepkg -si` in a subdirectory in order to build and instal
 When bootstrapping the cross compilers, build and install the following packages one by one, and in this order:
 
   * cygwin-binutils
+  * cygwin-default-manifest-bin
   * cygwin-w32api-headers
   * cygwin-w32api-runtime-bin
   * cygwin-bin
   * cygwin-gcc
+  * cygwin-default-manifest (replaces the `-bin` one)
   * cygwin-w32api-runtime (replaces the `-bin` one)
   * cygwin (replaces the `-bin` one; requires `cocom` to build)
+  * cygwin-gcc (rebuild to link against our just-built libraries)
 
 After that other packages can be built and installed normally ;)
 
