@@ -35,6 +35,12 @@ Then you should be able to install packages like this: `pacman -S cygwin-gcc cyg
 
 ### Building
 
+> [!IMPORTANT]
+>
+> Parallel builds might break things sometimes, use a single job to be safe.
+>
+> You can do this by editing your `/etc/makepkg.conf` and remove `-jXX` from `MAKEFLAGS` (if any).
+
 First, clone this repository using Git and make sure you have installed `base-devel` package group from archlinux repository before proceeding.
 
 And then simply run `makepkg -si` in a subdirectory in order to build and install that package.
