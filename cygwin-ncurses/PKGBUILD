@@ -1,5 +1,5 @@
 pkgname=cygwin-ncurses
-pkgver=6.4_20240120
+pkgver=6.5_20240427
 pkgrel=1
 pkgdesc="System V Release 4.0 curses emulation library (Cygwin)"
 arch=('any')
@@ -15,7 +15,7 @@ source=("https://invisible-mirror.net/archives/ncurses/current/ncurses-${pkgver/
         ncurses-6.3-pkgconfig.patch
         cygwin-ncurses-abi.patch
         cygwin-terminfo.patch)
-sha256sums=('01ea9ffac5713e0bea87292952bcca9313f15f496ec5f763a55a36b178045505'
+sha256sums=('abf30fcb0f97706cb3f62703595c561515f6b7c257dce2e3c8dee7d83afdfa76'
             'dc4261b6642058a9df1c0945e2409b24f84673ddc3a665d8a15ed3580e51ee25'
             'b8544a607dfbeffaba2b087f03b57ed1fa81286afca25df65f61b04b5f3b3738'
             'ccc61018e8683b7184625e8a5143e63c3a4c7aaa65df30feb69a81bfc913ca9f'
