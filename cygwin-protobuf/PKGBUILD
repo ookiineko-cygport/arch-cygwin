@@ -13,7 +13,7 @@ source=("https://github.com/protocolbuffers/protobuf/archive/v${pkgver}/protobuf
         "https://github.com/protocolbuffers/protobuf/commit/101b6199.patch"
         cygwin-remove-gtest.patch)
 sha256sums=('22fdaf641b31655d4b2297f9981fa5203b2866f8332d3c6333f6b0107bb320de'
-            '96c4f97f662589d5daa0857ad47f740853cf273f817de21612383d76e4243b44'
+            '5eee1dd6898007307d9d286be8e45e5e5cf4d6e6d594fd5f49b236df4bfe2ac1'
             '9eff0831e3342f06773da2ed6758313910c677c57f7de5c0c0dd779796912d69')
 
 _targets="x86_64-pc-cygwin"
