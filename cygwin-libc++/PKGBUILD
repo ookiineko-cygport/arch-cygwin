@@ -2,6 +2,7 @@ pkgbase=cygwin-libc++
 pkgname=(cygwin-libc++ cygwin-libc++abi cygwin-llvm-libunwind)
 pkgver=15.0.7
 pkgrel=1
+pkgdesc='LLVM C++ standard library. (Cygwin) (experimental)'
 arch=('any')
 url="https://github.com/llvm/llvm-project/tree/main/libunwind"
 license=('custom:Apache 2.0 with LLVM Exception')
@@ -137,7 +138,6 @@ build() {
 # Do not remove the space before the () or commitpkg will
 # accidentally to run this function on the system (!!!)
 package_cygwin-libc++ () {
-  pkgdesc='LLVM C++ standard library. (Cygwin) (experimental)'
   depends=('cygwin-gcc' "cygwin-libc++abi=${pkgver}-${pkgrel}")
 
   for _target in ${_targets}; do
