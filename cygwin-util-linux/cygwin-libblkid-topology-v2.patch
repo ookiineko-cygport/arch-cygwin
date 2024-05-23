@@ -1,0 +1,67 @@
+--- origsrc/util-linux-2.39.3/libblkid/src/Makemodule.am	2023-11-21 00:46:50.047993300 -0800
++++ src/util-linux-2.39.3/libblkid/src/Makemodule.am	2024-03-06 22:10:18.882560900 -0800
+@@ -104,6 +104,7 @@ libblkid_la_SOURCES = \
+ 	libblkid/src/superblocks/zonefs.c \
+ 	libblkid/src/superblocks/erofs.c \
+ 	\
++	libblkid/src/topology/ioctl.c \
+ 	libblkid/src/topology/topology.c \
+ 	libblkid/src/topology/topology.h
+ 
+@@ -111,7 +112,6 @@ if LINUX
+ libblkid_la_SOURCES += \
+ 	libblkid/src/topology/dm.c \
+ 	libblkid/src/topology/evms.c \
+-	libblkid/src/topology/ioctl.c \
+ 	libblkid/src/topology/lvm.c \
+ 	libblkid/src/topology/md.c \
+ 	libblkid/src/topology/sysfs.c
+--- origsrc/util-linux-2.39.3/libblkid/src/topology/topology.c	2023-12-01 03:25:15.861048300 -0800
++++ src/util-linux-2.39.3/libblkid/src/topology/topology.c	2024-03-06 22:15:59.307406200 -0800
+@@ -77,7 +77,9 @@ struct blkid_struct_topology {
+  */
+ static const struct blkid_idinfo *idinfos[] =
+ {
+-#ifdef __linux__
++#if defined(__CYGWIN__)
++	&ioctl_tp_idinfo,
++#elif defined(__linux__)
+ 	&sysfs_tp_idinfo,
+ 	&ioctl_tp_idinfo,
+ 	&md_tp_idinfo,
+--- origsrc/util-linux-2.39.3/libblkid/src/topology/topology.h	2023-11-21 00:46:50.052993200 -0800
++++ src/util-linux-2.39.3/libblkid/src/topology/topology.h	2024-03-06 22:17:36.821198100 -0800
+@@ -13,8 +13,10 @@ extern int blkid_topology_set_diskseq(bl
+ /*
+  * topology probers
+  */
+-#ifdef __linux__
++#if defined(__linux__) || defined(__CYGWIN__)
+ extern const struct blkid_idinfo ioctl_tp_idinfo;
++#endif
++#ifdef __linux__
+ extern const struct blkid_idinfo md_tp_idinfo;
+ extern const struct blkid_idinfo evms_tp_idinfo;
+ extern const struct blkid_idinfo sysfs_tp_idinfo;
+--- origsrc/util-linux-2.39.3/libblkid/src/topology/ioctl.c	2023-11-21 00:46:50.051993200 -0800
++++ src/util-linux-2.39.3/libblkid/src/topology/ioctl.c	2024-04-02 00:26:02.916377500 -0700
+@@ -35,7 +35,9 @@ static const struct topology_val {
+ 	{ BLKIOMIN, blkid_topology_set_minimum_io_size },
+ 	{ BLKIOOPT, blkid_topology_set_optimal_io_size },
+ 	{ BLKPBSZGET, blkid_topology_set_physical_sector_size },
++#ifdef BLKGETDISKSEQ
+ 	{ BLKGETDISKSEQ, .set_u64 = blkid_topology_set_diskseq },
++#endif
+ 	/* we read BLKSSZGET in topology.c */
+ };
+
+@@ -51,7 +53,7 @@ static int probe_ioctl_tp(blkid_probe pr
+ 			unsigned long ul;
+ 			int i;
+ 			uint64_t u64;
+-		} data;
++		} data = { 0 };
+
+ 		if (ioctl(pr->fd, val->ioc, &data) == -1)
+ 			goto nothing;
+
