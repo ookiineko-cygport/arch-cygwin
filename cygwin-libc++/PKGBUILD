@@ -7,8 +7,7 @@ arch=('any')
 url="https://github.com/llvm/llvm-project/tree/main/libunwind"
 license=('custom:Apache 2.0 with LLVM Exception')
 groups=('cygwin-toolchain')
-depends=('cygwin-compiler-rt')
-makedepends=('cygwin-xclang' 'cygwin-cmake' 'ninja')
+makedepends=('cygwin-compiler-rt' 'cygwin-xclang' 'cygwin-cmake' 'ninja')
 options=('!strip' 'staticlibs' '!buildflags')
 source=("https://github.com/llvm/llvm-project/releases/download/llvmorg-${pkgver}/libcxx-${pkgver}.src.tar.xz"
         "https://github.com/llvm/llvm-project/releases/download/llvmorg-${pkgver}/libcxxabi-${pkgver}.src.tar.xz"
