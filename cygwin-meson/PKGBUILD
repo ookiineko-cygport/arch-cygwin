@@ -1,0 +1,43 @@
+pkgname=cygwin-meson
+pkgver=1
+pkgrel=25
+pkgdesc="Meson wrapper for Cygwin"
+arch=('any')
+url="http://fedoraproject.org/wiki/MinGW"
+license=('GPL')
+groups=('cygwin-toolchain')
+depends=('meson' 'cygwin-gcc' 'cygwin-pkg-config')
+makedepends=('cygwin-environment')
+optdepends=('cygwin-wine: Set NEED_WINE env variable in your PKGBUILD to use wine support in meson')
+source=(toolchain_generator.py
+        meson-cygwin-wrapper)
+md5sums=('SKIP'
+         'SKIP')
+
+_targets="x86_64-pc-cygwin"
+
+build() {
+  for _target in ${_targets}; do
+    unset CPPFLAGS
+    unset CFLAGS
+    unset CXXFLAGS
+    unset LDFLAGS
+    source cygwin-env ${_target}
+    python toolchain_generator.py --arch ${_target} --output-file toolchain-${_target}.meson 
+    python toolchain_generator.py --arch ${_target} --output-file toolchain-${_target}-wine.meson --need-exe-wrapper 
+    sed "s|@TRIPLE@|${_target}|g;" meson-cygwin-wrapper > ${_target}-meson
+  done
+}
+
+package() {
+  install -d "$pkgdir"/usr/bin
+  install -d "$pkgdir"/usr/share/cygwin
+  install -m 755 "$srcdir"/toolchain_generator.py "$pkgdir"/usr/bin/cygwin-meson-cross-file-generator
+  for _target in ${_targets}; do
+    install -m 755 "$srcdir"/${_target}-meson "$pkgdir"/usr/bin/${_target}-meson
+    install -m 644 toolchain-${_target}.meson "$pkgdir"/usr/share/cygwin/
+    install -m 644 toolchain-${_target}-wine.meson "$pkgdir"/usr/share/cygwin/
+  done
+}
+
+# vim: ts=2 sw=2 et:
