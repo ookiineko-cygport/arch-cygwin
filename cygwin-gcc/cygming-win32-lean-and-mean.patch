@@ -314,8 +314,8 @@ index 23ed8da241f..5aed8f226a9 100644
  #elif defined (__sun__)
 diff --git a/gcc/diagnostic-color.c b/gcc/diagnostic-color.c
 index 1fc5a9079c7..fe72f75f269 100644
---- a/gcc/diagnostic-color.c
-+++ b/gcc/diagnostic-color.c
+--- a/gcc/diagnostic-color.cc
++++ b/gcc/diagnostic-color.cc
 @@ -22,6 +22,7 @@
  #include "diagnostic-url.h"
  
@@ -338,8 +338,8 @@ index b7b77d0e6a5..ba21728acfe 100644
  namespace gcc {
 diff --git a/gcc/plugin.c b/gcc/plugin.c
 index d47fa512ac1..b3325adcdb0 100644
---- a/gcc/plugin.c
-+++ b/gcc/plugin.c
+--- a/gcc/plugin.cc
++++ b/gcc/plugin.cc
 @@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
  #ifndef NOMINMAX
  #define NOMINMAX
@@ -350,8 +350,8 @@ index d47fa512ac1..b3325adcdb0 100644
  
 diff --git a/gcc/prefix.c b/gcc/prefix.c
 index 747c09de638..b23d17db526 100644
---- a/gcc/prefix.c
-+++ b/gcc/prefix.c
+--- a/gcc/prefix.cc
++++ b/gcc/prefix.cc
 @@ -67,6 +67,7 @@ License along with GCC; see the file COPYING3.  If not see
  #include "system.h"
  #include "coretypes.h"
@@ -372,6 +372,18 @@ index d7a4027f22f..5531ff83476 100644
  #include <windows.h>
  #undef UWORD
  #include "libatomic_i.h"
+diff --git a/libffi/src/aarch64/ffi.c b/libffi/src/aarch64/ffi.c
+index 5c85fcd0e9c..b394c18fc56 100644
+--- a/libffi/src/aarch64/ffi.c
++++ b/libffi/src/aarch64/ffi.c
+@@ -28,6 +28,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
+ #include <ffi_common.h>
+ #include "internal.h"
+ #ifdef _WIN32
++#define WIN32_LEAN_AND_MEAN
+ #include <windows.h> /* FlushInstructionCache */
+ #endif
+ #include <tramp.h>
 diff --git a/libgcc/config/i386/enable-execute-stack-mingw32.c b/libgcc/config/i386/enable-execute-stack-mingw32.c
 index 8aebad88994..e4157d47c13 100644
 --- a/libgcc/config/i386/enable-execute-stack-mingw32.c
@@ -480,6 +492,18 @@ index 6e911f087f1..c2a73da7439 100644
  #include <windows.h>
  #include <wincrypt.h>
  # define _PATH_TTY "CONOUT$"
+diff --git a/libstdc++-v3/src/c++11/system_error.cc b/libstdc++-v3/src/c++11/system_error.cc
+index 3c69bed3f8d..3a4baab0bc2 100644
+--- a/libstdc++-v3/src/c++11/system_error.cc
++++ b/libstdc++-v3/src/c++11/system_error.cc
+@@ -33,6 +33,7 @@
+ #undef __sso_string
+ 
+ #if defined(_WIN32) && !defined(__CYGWIN__)
++#define WIN32_LEAN_AND_MEAN
+ #include <memory>
+ #include <windows.h>
+ #endif
 diff --git a/libstdc++-v3/src/c++11/thread.cc b/libstdc++-v3/src/c++11/thread.cc
 index 38c945668ca..6e7f228cca6 100644
 --- a/libstdc++-v3/src/c++11/thread.cc
