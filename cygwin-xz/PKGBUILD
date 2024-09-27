@@ -1,29 +1,23 @@
 pkgname=cygwin-xz
 pkgver=5.6.1
-pkgrel=2
+pkgrel=1
 pkgdesc="Library and command line tools for XZ and LZMA compressed files (Cygwin)"
 arch=('any')
 url="https://xz.tukaani.org/xz-utils/"
 license=('GPL' 'LGPL' 'custom')
 groups=('cygwin-toolchain')
 depends=('cygwin')
-makedepends=('cygwin-configure' 'git' 'po4a' 'doxygen')
+makedepends=('cygwin-configure')
 conflicts=('cygwin-liblzma')
 provides=('cygwin-liblzma')
 options=('!strip' 'staticlibs' '!libtool' '!buildflags')
-source=("git+https://git.tukaani.org/xz.git#tag=v${pkgver}")
-sha256sums=('SKIP')
+source=("https://github.com/tukaani-project/xz/releases/download/v${pkgver}/xz-${pkgver}.tar.gz")
+sha256sums=('2398f4a8e53345325f44bdd9f0cc7401bd9025d736c6d43b372f4dea77bf75b8')
 
 _targets="x86_64-pc-cygwin"
 
-prepare() {
-  cd xz
-
-  ./autogen.sh
-}
-
 build() {
-  cd xz
+  cd xz-${pkgver}
   for _target in ${_targets}; do
     echo "Building for ${_target}"
     mkdir -p build-${_target} && pushd build-${_target}
@@ -34,7 +28,7 @@ build() {
 }
 
 package() {
-  cd xz
+  cd xz-${pkgver}
   for _target in ${_targets}; do
     echo "Installing for ${_target}"
     (cd build-${_target} && make DESTDIR="$pkgdir" install)
