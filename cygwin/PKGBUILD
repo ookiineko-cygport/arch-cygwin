@@ -40,7 +40,7 @@ package() {
   for _target in ${_targets}; do
     echo "Installing for ${_target}"
     cd "$srcdir"/build-${_target}
-    make DESTDIR="$pkgdir" tooldir=/usr/${_target} install
+    make DESTDIR="$pkgdir" tooldir=/usr/${_target} install -j1
     # install licenses
     if [[ ! -f "$pkgdir"/usr/share/licenses/${pkgname}/COPYING ]]; then
       install -Dm644 "$pkgdir"/usr/${_target}/share/doc/Cygwin/COPYING \
