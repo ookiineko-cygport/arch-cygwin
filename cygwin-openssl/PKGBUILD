@@ -1,5 +1,5 @@
 pkgname=cygwin-openssl
-pkgver=3.0.14
+pkgver=3.0.15
 pkgrel=1
 pkgdesc="The Open Source toolkit for Secure Sockets Layer and Transport Layer Security (Cygwin)"
 arch=('any')
@@ -18,7 +18,7 @@ source=("https://www.openssl.org/source/openssl-${pkgver}.tar.gz"
         "https://src.fedoraproject.org/rpms/openssl/raw/f38/f/0052-Allow-SHA1-in-seclevel-1-if-rh-allow-sha1-signatures.patch"
         0051-Support-different-R_BITS-lengths-for-KBKDF.patch
         cygwin-0100-RSA-PKCS15-implicit-rejection.patch)
-sha256sums=('eeca035d4dd4e84fc25846d952da6297484afa0650a6f84c682e39df3a4123ca'
+sha256sums=('23c666d0edf20f14249b3d8f0368acaee9ab585b09e1de82107c66e1f3ec9533'
             'deaaaa96ff1c3f629863ed12e45ea845802f5375d04023013774160a1e0ce7c1'
             '2dccbfbbcf7739cb79d9c9277af41c920bcc5b712e3160e3bc38a25dcf22a6e7'
             '6882968e5f7be245dd865e4eb3aa0d1e39798c4e9021bb6a7fad2eabe6378910'
