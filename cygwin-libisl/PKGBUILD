@@ -1,5 +1,5 @@
 pkgname=cygwin-libisl
-pkgver=0.26
+pkgver=0.27
 pkgrel=1
 pkgdesc="Library for manipulating sets and relations of integer points bounded by linear constraints (Cygwin)"
 arch=('any')
@@ -10,7 +10,7 @@ depends=('cygwin' 'cygwin-gmp')
 makedepends=('cygwin-configure')
 options=('!strip' 'staticlibs' '!libtool' '!buildflags')
 source=("https://libisl.sourceforge.io/isl-${pkgver}.tar.xz")
-sha256sums=('a0b5cb06d24f9fa9e77b55fabbe9a3c94a336190345c2555f9915bb38e976504')
+sha256sums=('6d8babb59e7b672e8cb7870e874f3f7b813b6e00e6af3f8b04f7579965643d5c')
 
 _targets="x86_64-pc-cygwin"
 
