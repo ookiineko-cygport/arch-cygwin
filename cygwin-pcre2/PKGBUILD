@@ -1,5 +1,5 @@
 pkgname=cygwin-pcre2
-pkgver=10.43
+pkgver=10.44
 pkgrel=1
 pkgdesc="A library that implements Perl 5-style regular expressions. 2nd version (Cygwin)"
 arch=('any')
@@ -12,8 +12,8 @@ makedepends=('cygwin-configure'
 options=('!strip' 'staticlibs' '!libtool' '!buildflags' '!emptydirs')
 source=("https://github.com/PCRE2Project/pcre2/releases/download/pcre2-${pkgver}/pcre2-${pkgver}.tar.bz2"
         cygwin-jit.patch)
-sha256sums=('e2a53984ff0b07dfdb5ae4486bbb9b21cca8e7df2434096cc9bf1b728c350bcb'
-            '1fd6d7ccfeaa2797e6c54e4410b7286da52c8a3c8f994632efe0070a3bfc0d7a')
+sha256sums=('d34f02e113cf7193a1ebf2770d3ac527088d485d4e047ed10e5d217c6ef5de96'
+            'f9e964c8fc46363a72d681668ed90dcb87e841e41898d9405320a163234cf51d')
 
 _targets="x86_64-pc-cygwin"
 

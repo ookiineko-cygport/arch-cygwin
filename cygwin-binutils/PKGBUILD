@@ -1,6 +1,6 @@
 pkgname=cygwin-binutils
-pkgver=2.42
-pkgrel=2
+pkgver=2.43.1
+pkgrel=1
 pkgdesc="Cross binutils for the Cygwin cross-compiler"
 arch=('x86_64')
 url="http://www.gnu.org/software/binutils"
@@ -10,7 +10,7 @@ depends=('glibc' 'libelf' 'zlib' 'zstd' 'msgpack-c')
 options=('!libtool' '!emptydirs')
 source=("https://ftp.gnu.org/gnu/binutils/binutils-${pkgver}.tar.gz"
         cygwin-config-rpath.patch)
-sha512sums=('1e4ee462513eadd3c540e4782f9661df62ecbcd4d6297d61dcc0845ae7d30243c57571787706af3bb4d561e4350609d7057307290e81d76290a301f159a6abc5'
+sha512sums=('678386dd9797c90f18c29a59d0f1d99292b494ee63c5e41bcf8b28025ad34a69498ff3806f262b1a83538b95b9bc12f6eafac5209a98a6e581037925b29a0eb3'
             'd3459d1390f3d0691fbb27da0aa37e43ef664e39e8fbfcee23aab84ad1a3016a5ad90e2f98d1901a3384604e309bdb787cadcdd6f935563075b5a7c6e39f74a5')
 
 _targets="x86_64-pc-cygwin"

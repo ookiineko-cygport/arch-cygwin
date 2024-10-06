@@ -1,6 +1,6 @@
 _realname=w32api-runtime
 pkgname=cygwin-w32api-runtime-bin
-pkgver=11.0.1
+pkgver=12.0.0
 pkgrel=1
 pkgdesc="Windows API libraries for the Cygwin cross toolchain (bootstrap)"
 arch=('any')
@@ -12,7 +12,7 @@ conflicts=('cygwin-w32api-runtime')
 options=('!strip' 'staticlibs' '!emptydirs')
 source=("${_realname}-${pkgver}-1-x86_64.tar.xz::${_mirror}/x86_64/release/${_realname}/${_realname}-${pkgver}-1.tar.xz")
 noextract=("${source[@]%%::*}")
-sha256sums=('2dcb336f93c0dd9d173035bfac367d5bd02b9bee4331030872214470241ee3cb')
+sha256sums=('f3fe80c5e0bbcd1adc09a22e3d35c4baaa77342c2b8b331e13c1477d35b9c99c')
 
 _targets="x86_64-pc-cygwin"
 

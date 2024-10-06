@@ -1,6 +1,6 @@
 _realname=cygwin
 pkgname=cygwin-bin
-pkgver=3.5.3
+pkgver=3.5.4
 pkgrel=1
 pkgdesc="POSIX compatibility C runtime for Windows (bootstrap)"
 arch=('any')
@@ -14,8 +14,8 @@ _rev=1
 source=("${_realname}-${pkgver}-${_rev}-x86_64.tar.xz::${_mirror}/x86_64/release/${_realname}/${_realname}-${pkgver}-${_rev}.tar.xz"
         "${_realname}-devel-${pkgver}-${_rev}-x86_64.tar.xz::${_mirror}/x86_64/release/${_realname}/${_realname}-devel/${_realname}-devel-${pkgver}-${_rev}.tar.xz")
 noextract=("${source[@]%%::*}")
-sha256sums=('b9e37453230496aec733708fe9452e3e206cc2234b910fc4dde00e31876b6838'
-            '6947002e4d16c136fe9cedc693d3f092961c7cb5dfc40663151d6e53e9c360f1')
+sha256sums=('feddbc5f67419c8b0b2e12e95994737d989880ebb3969a519cebcf515c1d0d8d'
+            'b2f4f51644081728a5ea5794f967f89a9095e5aaf8e2194eb6f2ce050e739920')
 
 _targets="x86_64-pc-cygwin"
 

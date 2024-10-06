@@ -1,7 +1,7 @@
 # NOTE: requires rebuilt with each new gcc version
 
 pkgname=cygwin-libtool
-pkgver=2.4.7
+pkgver=2.5.3
 pkgrel=1
 pkgdesc="A generic library support script (Cygwin)"
 arch=('any')
@@ -17,10 +17,10 @@ source=("https://ftp.gnu.org/gnu/libtool/libtool-${pkgver}.tar.xz"
         cygming-pass-ld-flags.patch
         cygming-fix-seems-to-be-moved.patch
         cygming-pick-up-clang-rt.patch)
-sha256sums=('4f7f217f057ce655ff22559ad221a0fd8ef84ad1fc5fcb6990cecc333aa1635d'
-            '800f929efe2445271cf1c58501969bb9bee87a3114528498e61e389c2960351c'
+sha256sums=('898011232cc59b6b3bbbe321b60aba9db1ac11578ab61ed0df0299458146ae2e'
+            '62c524e302421e7505995e6b4ce5e0d9d64a41a20645f7a4706472ccc009331f'
             'dc39fbe066958178f96108f07db62b48b9339efddf2c21f800ff8d67110ca393'
-            '06d1a4bf88cc02bcc175b150b843541b8ee4627cc571651548f1f2dbe5ed6d5c')
+            '3b0a03a0210f015b633d429141100a2e7acd0bf81943af7c4976e7e06cac3f8b')
 
 _targets="x86_64-pc-cygwin"
 

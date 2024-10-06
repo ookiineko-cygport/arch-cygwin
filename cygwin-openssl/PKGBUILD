@@ -1,5 +1,5 @@
 pkgname=cygwin-openssl
-pkgver=3.0.13
+pkgver=3.0.15
 pkgrel=1
 pkgdesc="The Open Source toolkit for Secure Sockets Layer and Transport Layer Security (Cygwin)"
 arch=('any')
@@ -15,17 +15,17 @@ source=("https://www.openssl.org/source/openssl-${pkgver}.tar.gz"
         "https://src.fedoraproject.org/rpms/openssl/raw/f38/f/0011-Remove-EC-curves.patch"
         "https://src.fedoraproject.org/rpms/openssl/raw/f38/f/0012-Disable-explicit-ec.patch"
         "https://src.fedoraproject.org/rpms/openssl/raw/f38/f/0049-Allow-disabling-of-SHA1-signatures.patch"
-        "https://src.fedoraproject.org/rpms/openssl/raw/f38/f/0051-Support-different-R_BITS-lengths-for-KBKDF.patch"
         "https://src.fedoraproject.org/rpms/openssl/raw/f38/f/0052-Allow-SHA1-in-seclevel-1-if-rh-allow-sha1-signatures.patch"
+        0051-Support-different-R_BITS-lengths-for-KBKDF.patch
         cygwin-0100-RSA-PKCS15-implicit-rejection.patch)
-sha256sums=('88525753f79d3bec27d2fa7c66aa0b92b3aa9498dafd93d7cfa4b3780cdae313'
+sha256sums=('23c666d0edf20f14249b3d8f0368acaee9ab585b09e1de82107c66e1f3ec9533'
             'deaaaa96ff1c3f629863ed12e45ea845802f5375d04023013774160a1e0ce7c1'
             '2dccbfbbcf7739cb79d9c9277af41c920bcc5b712e3160e3bc38a25dcf22a6e7'
             '6882968e5f7be245dd865e4eb3aa0d1e39798c4e9021bb6a7fad2eabe6378910'
             '1e44308272b41598ddd5a94d71db8c84b6c737501ca8b3538b09ca48123ab42e'
             'cb9c0c88b885777be3aff1d3d3885cae6699aff9cf4a4facf301929e79bf513c'
-            'dc4cc3937e221f5f13379cacc560bffd36876b7043c49ebe1be470e8bb165148'
             '506aa1c5d0a308fc9c14eed0dd59e0f72c5b3ab1c9342225e1decb9615ad6c07'
+            '6aa04334e4f0a1157712edec86b6b22fd198ba83c016837874da6cc8c999b99e'
             '09bf5f5d191afb4dd830e1cb3204a4c9e2c5de1b8530d29536a94602a0f6c612')
 
 _targets="x86_64-pc-cygwin"

@@ -1,5 +1,5 @@
 pkgname=cygwin-w32api-headers
-pkgver=11.0.1
+pkgver=12.0.0
 pkgrel=1
 pkgdesc="Windows header files for the Cygwin cross toolchain"
 arch=('any')
@@ -8,7 +8,7 @@ license=('custom')
 groups=('cygwin-toolchain')
 options=('!strip' '!libtool' '!emptydirs')
 source=("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v${pkgver}.tar.bz2")
-sha256sums=('3f66bce069ee8bed7439a1a13da7cb91a5e67ea6170f21317ac7f5794625ee10')
+sha256sums=('cc41898aac4b6e8dd5cffd7331b9d9515b912df4420a3a612b5ea2955bbeed2f')
 
 _targets="x86_64-pc-cygwin"
 

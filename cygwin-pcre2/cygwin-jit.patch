@@ -1,6 +1,6 @@
---- origsrc/pcre2-10.43/src/sljit/sljitConfigInternal.h
-+++ src/pcre2-10.43/src/sljit/sljitConfigInternal.h
-@@ -603,15 +603,15 @@
+--- origsrc/pcre2-10.44/src/sljit/sljitConfigInternal.h
++++ src/pcre2-10.44/src/sljit/sljitConfigInternal.h
+@@ -602,15 +602,15 @@
  #define SLJIT_NUMBER_OF_TEMPORARY_REGISTERS 2
  #define SLJIT_NUMBER_OF_FLOAT_REGISTERS 15
  #define SLJIT_NUMBER_OF_TEMPORARY_FLOAT_REGISTERS 1
@@ -16,13 +16,13 @@
  #define SLJIT_LOCALS_OFFSET_BASE (4 * SSIZE_OF(sw))
 -#endif /* !_WIN64 */
 +#endif /* !_WIN64 && !__CYGWIN__ */
- #define SLJIT_PREF_SHIFT_REG SLJIT_R3
- #define SLJIT_MASKED_SHIFT 1
- #define SLJIT_MASKED_SHIFT32 1
+ #define SLJIT_TMP_DEST_REG SLJIT_TMP_R0
+ #define SLJIT_TMP_MEM_REG SLJIT_TMP_R0
+ #define SLJIT_TMP_DEST_FREG SLJIT_TMP_FR0
 
---- origsrc/pcre2-10.43/src/sljit/sljitNativeX86_64.c
-+++ src/pcre2-10.43/src/sljit/sljitNativeX86_64.c
-@@ -443,11 +443,11 @@
+--- origsrc/pcre2-10.44/src/sljit/sljitNativeX86_64.c
++++ src/pcre2-10.44/src/sljit/sljitNativeX86_64.c
+@@ -447,11 +447,11 @@
  	return code_ptr;
  }
  
@@ -36,7 +36,7 @@
  
  SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_enter(struct sljit_compiler *compiler,
  	sljit_s32 options, sljit_s32 arg_types, sljit_s32 scratches, sljit_s32 saveds,
-@@ -457,11 +457,11 @@
+@@ -461,11 +461,11 @@
  	sljit_s32 word_arg_count = 0;
  	sljit_s32 saved_arg_count = SLJIT_KEPT_SAVEDS_COUNT(options);
  	sljit_s32 saved_regs_size, tmp, i;
@@ -50,7 +50,7 @@
  	sljit_u8 *inst;
  
  	CHECK_ERROR();
-@@ -500,7 +500,7 @@
+@@ -504,7 +504,7 @@
  		PUSH_REG(reg_lmap[i]);
  	}
  
@@ -59,7 +59,7 @@
  	local_size += SLJIT_LOCALS_OFFSET;
  	saved_float_regs_size = GET_SAVED_FLOAT_REGISTERS_SIZE(fscratches, fsaveds, sse2_reg);
  
-@@ -508,16 +508,16 @@
+@@ -512,16 +512,16 @@
  		saved_float_regs_offset = ((local_size + 0xf) & ~0xf);
  		local_size = saved_float_regs_offset + saved_float_regs_size;
  	}
@@ -79,7 +79,7 @@
  			switch (word_arg_count) {
  			case 0:
  				tmp = SLJIT_R2;
-@@ -532,7 +532,7 @@
+@@ -536,7 +536,7 @@
  				tmp = SLJIT_R3;
  				break;
  			}
@@ -88,7 +88,7 @@
  			switch (word_arg_count + float_arg_count) {
  			case 0:
  				tmp = SLJIT_R3;
-@@ -547,7 +547,7 @@
+@@ -551,7 +551,7 @@
  				tmp = TMP_REG1;
  				break;
  			}
@@ -97,7 +97,7 @@
  			if (arg_types & SLJIT_ARG_TYPE_SCRATCH_REG) {
  				if (tmp != SLJIT_R0 + word_arg_count)
  					EMIT_MOV(compiler, SLJIT_R0 + word_arg_count, 0, tmp, 0);
-@@ -557,13 +557,13 @@
+@@ -561,13 +561,13 @@
  			}
  			word_arg_count++;
  		} else {
@@ -113,7 +113,7 @@
  		}
  		arg_types >>= SLJIT_ARG_SHIFT;
  	}
-@@ -571,7 +571,7 @@
+@@ -575,7 +575,7 @@
  	local_size = ((local_size + saved_regs_size + 0xf) & ~0xf) - saved_regs_size;
  	compiler->local_size = local_size;
  
@@ -122,7 +122,7 @@
  	if (local_size > 0) {
  		if (local_size <= 4 * 4096) {
  			if (local_size > 4096)
-@@ -600,12 +600,12 @@
+@@ -604,12 +604,12 @@
  		if (local_size > 0)
  			EMIT_MOV(compiler, TMP_REG1, 0, SLJIT_MEM1(SLJIT_SP), -local_size);
  	}
@@ -137,7 +137,7 @@
  	if (saved_float_regs_size > 0) {
  		compiler->mode32 = 1;
  
-@@ -620,7 +620,7 @@
+@@ -624,7 +624,7 @@
  			saved_float_regs_offset += 16;
  		}
  	}
@@ -146,7 +146,7 @@
  
  	return SLJIT_SUCCESS;
  }
-@@ -630,23 +630,23 @@
+@@ -634,23 +634,23 @@
  	sljit_s32 fscratches, sljit_s32 fsaveds, sljit_s32 local_size)
  {
  	sljit_s32 saved_regs_size;
@@ -175,7 +175,7 @@
  
  	/* Including the return address saved by the call instruction. */
  	saved_regs_size = GET_SAVED_REGISTERS_SIZE(scratches, saveds - SLJIT_KEPT_SAVEDS_COUNT(options), 1);
-@@ -659,13 +659,13 @@
+@@ -663,13 +663,13 @@
  	sljit_uw size;
  	sljit_s32 local_size, i, tmp;
  	sljit_u8 *inst;
@@ -192,7 +192,7 @@
  	saved_float_regs_offset = GET_SAVED_FLOAT_REGISTERS_SIZE(fscratches, fsaveds, sse2_reg);
  
  	if (saved_float_regs_offset > 0) {
-@@ -685,7 +685,7 @@
+@@ -689,7 +689,7 @@
  
  		compiler->mode32 = 0;
  	}
@@ -201,7 +201,7 @@
  
  	local_size = compiler->local_size;
  
-@@ -762,7 +762,7 @@
+@@ -766,7 +766,7 @@
  /*  Call / return instructions                                           */
  /* --------------------------------------------------------------------- */
  
@@ -211,70 +211,79 @@
  static sljit_s32 call_with_args(struct sljit_compiler *compiler, sljit_s32 arg_types, sljit_s32 *src_ptr)
  {
 
---- origsrc/pcre2-10.43/src/sljit/sljitNativeX86_common.c
-+++ src/pcre2-10.43/src/sljit/sljitNativeX86_common.c
-@@ -95,7 +95,7 @@
+--- origsrc/pcre2-10.44/src/sljit/sljitNativeX86_common.c
++++ src/pcre2-10.44/src/sljit/sljitNativeX86_common.c
+@@ -61,6 +61,8 @@
+     15 - R15
+ */
+ 
++#define _WIN64__OR__CYGWIN_ (defined(_WIN64) || defined(__CYGWIN__))
++
+ #define TMP_REG1	(SLJIT_NUMBER_OF_REGISTERS + 2)
+ #define TMP_FREG	(SLJIT_NUMBER_OF_FLOAT_REGISTERS + 1)
+ 
+@@ -88,7 +90,7 @@
  /* Note: r12 & 0x7 == 0b100, which decoded as SIB byte present
     Note: avoid to use r12 and r13 for memory addressing
     therefore r12 is better to be a higher saved register. */
 -#ifndef _WIN64
-+# if !defined _WIN64 && !defined __CYGWIN__
++#ifndef _WIN64__OR__CYGWIN_
  /* Args: rdi(=7), rsi(=6), rdx(=2), rcx(=1), r8, r9. Scratches: rax(=0), r10, r11 */
  static const sljit_u8 reg_map[SLJIT_NUMBER_OF_REGISTERS + 4] = {
  	0, 0, 6, 7, 1, 8, 11, 10, 12, 5, 13, 14, 15, 3, 4, 2, 9
-@@ -130,7 +130,7 @@
+@@ -123,7 +125,7 @@
  #define REX_B		0x41
  #define REX		0x40
  
 -#ifndef _WIN64
-+# if !defined _WIN64 && !defined __CYGWIN__
++#ifndef _WIN64__OR__CYGWIN_
  #define HALFWORD_MAX 0x7fffffffl
  #define HALFWORD_MIN -0x80000000l
  #else
-@@ -1228,7 +1228,7 @@
+@@ -1377,7 +1379,7 @@
  	case SLJIT_DIV_UW:
  	case SLJIT_DIV_SW:
  #if (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64)
 -#ifdef _WIN64
-+# if defined _WIN64 || defined __CYGWIN__
++#ifdef _WIN64__OR__CYGWIN_
  		SLJIT_ASSERT(
  			reg_map[SLJIT_R0] == 0
  			&& reg_map[SLJIT_R1] == 2
-@@ -1245,7 +1245,7 @@
+@@ -1394,7 +1396,7 @@
  
  		op = GET_OPCODE(op);
  		if ((op | 0x2) == SLJIT_DIV_UW) {
 -#if (defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32) || defined(_WIN64)
-+#if (defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32) || defined(_WIN64) || defined(__CYGWIN__)
++#if (defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32) || defined(_WIN64__OR__CYGWIN_)
  			EMIT_MOV(compiler, TMP_REG1, 0, SLJIT_R1, 0);
  			inst = emit_x86_instruction(compiler, 1, SLJIT_R1, 0, SLJIT_R1, 0);
  #else
-@@ -1256,7 +1256,7 @@
+@@ -1405,7 +1407,7 @@
  		}
  
  		if ((op | 0x2) == SLJIT_DIV_SW) {
 -#if (defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32) || defined(_WIN64)
-+#if (defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32) || defined(_WIN64) || defined(__CYGWIN__)
++#if (defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32) || defined(_WIN64__OR__CYGWIN_)
  			EMIT_MOV(compiler, TMP_REG1, 0, SLJIT_R1, 0);
  #endif
  
-@@ -1281,27 +1281,27 @@
+@@ -1430,27 +1432,27 @@
  		inst[0] = GROUP_F7;
  		inst[1] = MOD_REG | ((op >= SLJIT_DIVMOD_UW) ? reg_map[TMP_REG1] : reg_map[SLJIT_R1]);
  #else /* !SLJIT_CONFIG_X86_32 */
 -#ifdef _WIN64
-+#if defined _WIN64 || defined __CYGWIN__
++#ifdef _WIN64__OR__CYGWIN_
  		size = (!compiler->mode32 || op >= SLJIT_DIVMOD_UW) ? 3 : 2;
 -#else /* !_WIN64 */
-+#else /* !_WIN64 && !__CYGWIN__ */
++#else /* !_WIN64__OR__CYGWIN_ */
  		size = (!compiler->mode32) ? 3 : 2;
 -#endif /* _WIN64 */
-+#endif /* _WIN64 || CYGWIN */
++#endif /* _WIN64__OR__CYGWIN_ */
  		inst = (sljit_u8*)ensure_buf(compiler, 1 + size);
  		FAIL_IF(!inst);
  		INC_SIZE(size);
 -#ifdef _WIN64
-+#if defined _WIN64 || defined __CYGWIN__
++#ifdef _WIN64__OR__CYGWIN_
  		if (!compiler->mode32)
  			*inst++ = REX_W | ((op >= SLJIT_DIVMOD_UW) ? REX_B : 0);
  		else if (op >= SLJIT_DIVMOD_UW)
@@ -282,14 +291,23 @@
  		inst[0] = GROUP_F7;
  		inst[1] = MOD_REG | ((op >= SLJIT_DIVMOD_UW) ? reg_lmap[TMP_REG1] : reg_lmap[SLJIT_R1]);
 -#else /* !_WIN64 */
-+#else /* !_WIN64 && !__CYGWIN__ */
++#else /* !_WIN64__OR__CYGWIN_ */
  		if (!compiler->mode32)
  			*inst++ = REX_W;
  		inst[0] = GROUP_F7;
  		inst[1] = MOD_REG | reg_map[SLJIT_R1];
 -#endif /* _WIN64 */
-+#endif /* _WIN64 || __CYGWIN__ */
++#endif /* _WIN64__OR__CYGWIN_ */
  #endif /* SLJIT_CONFIG_X86_32 */
  		switch (op) {
  		case SLJIT_LMUL_UW:
+@@ -1468,7 +1470,7 @@
+ 			inst[1] |= IDIV;
+ 			break;
+ 		}
+-#if (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64) && !defined(_WIN64)
++#if (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64) && !defined(_WIN64__OR__CYGWIN_)
+ 		if (op <= SLJIT_DIVMOD_SW)
+ 			EMIT_MOV(compiler, SLJIT_R1, 0, TMP_REG1, 0);
+ #else
 
