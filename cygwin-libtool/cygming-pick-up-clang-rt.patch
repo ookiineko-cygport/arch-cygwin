@@ -30,6 +30,6 @@
  
 -    -L* | -R* | -l*)
 +    -L* | -R* | -l* | *.${libext} | *${std_shrext})
-        # Some compilers place space between "-{L,R}" and the path.
+        # Some compilers place space between "-{L,R,l}" and the path.
         # Remove the space.
-        if test x-L = "$p" ||
+        if test x-L = x"$p" ||
